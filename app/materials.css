@@ -1,0 +1,16 @@
+.bottom{grid-template-columns:1.55fr .85fr 1fr}
+.materials{padding:15px 18px!important}
+.materialGrid{display:grid!important;grid-template-columns:repeat(4,1fr);gap:12px!important;margin-top:9px!important}
+.materialGrid>div{min-width:0;display:grid;grid-template-columns:48px 1fr;grid-template-rows:24px 24px;column-gap:9px;align-items:center}
+.materialGrid .material{grid-row:1/3;width:48px!important;height:52px!important;margin:0!important;border-radius:7px!important;border:1px solid #6c594327;box-shadow:inset 0 0 10px #fff3,0 3px 8px #49342212}
+.materialGrid b{align-self:end;white-space:nowrap;font:600 12px/1.2 serif}
+.materialGrid small{align-self:start;color:#9a8472;font:10px/1.35 serif;white-space:nowrap}
+.material.wood{background:repeating-linear-gradient(88deg,#5b3d2b 0 2px,#74513a 3px 7px,#4b3427 8px 9px,#806047 10px 15px)!important}
+.material.stone{background:linear-gradient(115deg,transparent 45%,#9d8d7b55 47%,transparent 49%),linear-gradient(25deg,#d9d0c2,#b7aa98 52%,#e3dacd)!important}
+.material.brick{background:linear-gradient(#ffffff20,#00000008),repeating-linear-gradient(0deg,#aa765b 0 11px,#d7b29b 12px 13px)!important}
+.material.fabric{background:repeating-linear-gradient(0deg,#c9b9a5 0 1px,#e1d5c5 1px 3px),repeating-linear-gradient(90deg,#ffffff22 0 1px,transparent 1px 3px)!important}
+.projectFacts{padding:15px 18px!important}
+.projectFacts>div{display:grid;grid-template-columns:1fr 1fr;margin-top:10px;border-top:1px solid #e0d4c5;border-left:1px solid #e0d4c5}
+.projectFacts p{display:flex;flex-direction:column;padding:8px 10px;border-right:1px solid #e0d4c5;border-bottom:1px solid #e0d4c5}
+.projectFacts b{font:600 13px/1.3 serif;color:#594137}
+.projectFacts small{margin-top:2px;font:10px/1.2 serif;color:#a28b79}
