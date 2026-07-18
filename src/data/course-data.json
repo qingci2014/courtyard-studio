@@ -57,6 +57,9 @@
           "clue": "设备不是查找一张完全相同的照片，而是从图像中提取面部特征，并估计当前人脸与已登记身份的匹配程度。",
           "verdict": "ai",
           "concept": "感知",
+          "media": {
+            "video": "/media/lesson01-face-unlock-loop.mp4"
+          },
           "explanation": "这是典型的AI感知任务：系统从图像中提取模式并进行身份预测，而不是只执行固定的像素比对规则。",
           "mechanism": {
             "task": "确认正在看手机的人是不是机主",

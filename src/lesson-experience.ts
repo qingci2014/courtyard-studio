@@ -7,6 +7,9 @@ interface CaseAnswer {
   confidence: number;
   evidenceSeen: boolean;
   resolved: boolean;
+  scanStarted?: boolean;
+  visualTests?: string[];
+  activeVisualTest?: string;
 }
 
 interface InvestigationState {
@@ -27,6 +30,7 @@ interface ExperienceOptions {
 
 const verdictClass = (verdict?: InvestigationVerdict) => verdict ? `is-${verdict}` : "";
 const escapeHtml = (value: string) => value.replace(/[&<>"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[character]!);
+const motionAllowed = !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function freshState(): InvestigationState {
   return { stage: "intro", estimate: 3, caseIndex: 0, answers: {}, reflection: "", completed: false };
@@ -79,6 +83,56 @@ function mechanismMarkup(item: InvestigationCase): string {
   return `<div class="mechanism-flow">${entries.map(([label, value], index) => `<article><span>${String(index + 1).padStart(2, "0")} · ${label}</span><p>${escapeHtml(value)}</p></article>`).join("")}</div>`;
 }
 
+const faceTestConfidence: Record<string, number> = { clear: 94, shadow: 68, angle: 56, cover: 34 };
+
+function renderFaceUnlockCase(experience: LessonExperience, state: InvestigationState, item: InvestigationCase, answer: CaseAnswer): string {
+  const tests = answer.visualTests ?? [];
+  const activeTest = answer.activeVisualTest ?? "clear";
+  const confidence = faceTestConfidence[activeTest] ?? faceTestConfidence.clear;
+  const progress = answer.resolved ? 100 / experience.cases.length : 0;
+  const faceTests: [string, string, string][] = [["shadow", "◐", "调暗光线"], ["angle", "↗", "改变角度"], ["cover", "◒", "遮挡面部"]];
+  if (answer.evidenceSeen) {
+    return `<main class="face-debrief" aria-labelledby="face-debrief-title">
+      <div class="case-progress" aria-label="调查进度"><span style="width:${progress}%"></span></div>
+      <video ${motionAllowed ? "autoplay" : ""} muted loop playsinline preload="auto" src="${item.media!.video}" aria-hidden="true"></video>
+      <div class="face-debrief-shade"></div>
+      <section class="face-debrief-panel">
+        <p class="investigation-eyebrow">TRACE DECODED · ${item.time}</p>
+        <h1 id="face-debrief-title" data-view-title tabindex="-1">扫描不是“认照片”</h1>
+        <div class="visual-pipeline" aria-label="人脸解锁处理流程">
+          <article><span>▦</span><strong>摄像头</strong><small>图像</small></article><i>→</i>
+          <article><span>⌁</span><strong>特征点</strong><small>提取模式</small></article><i>→</i>
+          <article><span>%</span><strong>匹配概率</strong><small>身份预测</small></article><i>→</i>
+          <article><span>⌾</span><strong>解锁</strong><small>执行任务</small></article>
+        </div>
+        <p class="face-clue">${item.clue}</p>
+        ${!answer.resolved ? `<div class="face-final-choice"><p class="workbench-label">最后判断</p><h2>这是学习型AI、规则自动化，还是仍然无法确定？</h2><div class="investigation-choices">${choiceButtons(experience, answer.final, "final")}</div><button class="investigation-primary" data-lock-verdict>锁定调查结论 <span>→</span></button></div>` : `<div class="face-resolution"><span>✓ 证据链成立</span><h2>${experience.labels[item.verdict]} · ${item.concept}</h2><p>${item.explanation}</p></div><button class="investigation-primary" data-next-case>进入下一个现场 <span>→</span></button>`}
+      </section>
+    </main>`;
+  }
+  return `<main class="face-unlock-game" data-face-mode="${activeTest}" aria-labelledby="face-game-title">
+    <div class="case-progress" aria-label="调查进度"><span style="width:0%"></span></div>
+    <section class="face-video-stage">
+      <video ${motionAllowed ? "autoplay" : ""} muted loop playsinline preload="auto" src="${item.media!.video}" aria-label="清晨宿舍中，学生拿起手机准备解锁"></video>
+      <div class="face-scene-tint"></div>
+      <div class="phone-ar" aria-hidden="true"><i></i><b></b><span data-phone-confidence>${confidence}%</span></div>
+      <div class="scene-case-label"><span>${item.time}</span><small>现场 01 / 06 · ${item.scene}</small></div>
+      <div class="face-game-copy">
+        <p class="investigation-eyebrow">LIVE TRACE · FACE UNLOCK</p>
+        <h1 id="face-game-title" data-view-title tabindex="-1">让手机认出主人</h1>
+        <p>${answer.scanStarted ? "改变现场条件，看看它什么时候开始犹豫。" : "黑屏里藏着一次身份判断。启动扫描。"}</p>
+      </div>
+      ${!answer.scanStarted ? `<button class="scan-trigger" data-start-face-scan><span>◎</span><strong>启动人脸扫描</strong><small>点击开始</small></button>` : `<div class="face-scan-hud">
+        <div class="scan-confidence"><span>身份匹配</span><strong data-face-confidence>${confidence}%</strong><i><b data-face-meter style="width:${confidence}%"></b></i></div>
+        <div class="face-test-dock" aria-label="扫描干扰测试">
+          ${faceTests.map(([id, icon, label]) => `<button data-face-test="${id}" class="${tests.includes(id) ? "is-tested" : ""}" aria-pressed="${activeTest === id}"><span>${icon}</span><strong>${label}</strong><small>${tests.includes(id) ? "已测试" : "试一试"}</small></button>`).join("")}
+        </div>
+      </div>`}
+    </section>
+    ${answer.scanStarted ? `<section class="face-verdict" ${tests.length >= 2 ? "" : "hidden"}><div><p class="workbench-label">你的判断</p><h2>它是在照规则比对，还是在预测“像不像本人”？</h2></div><div class="investigation-choices compact">${choiceButtons(experience, answer.initial)}</div><button class="investigation-primary" data-reveal-evidence ${answer.initial ? "" : "disabled"}>拆开黑箱 <span>→</span></button></section>` : ""}
+  </main>`;
+}
+
 function renderIntro(experience: LessonExperience, state: InvestigationState): string {
   const hasProgress = Object.values(state.answers).some((answer) => answer.evidenceSeen);
   return `<main class="investigation-intro" aria-labelledby="investigation-title">
@@ -105,6 +159,7 @@ function renderIntro(experience: LessonExperience, state: InvestigationState): s
 function renderCase(experience: LessonExperience, state: InvestigationState): string {
   const item = experience.cases[state.caseIndex]!;
   const answer = answerFor(state, item);
+  if (item.id === "face-unlock" && item.media?.video) return renderFaceUnlockCase(experience, state, item, answer);
   const progress = ((state.caseIndex + (answer.resolved ? 1 : 0)) / experience.cases.length) * 100;
   return `<main class="investigation-case" aria-labelledby="case-title">
     <div class="case-progress" aria-label="调查进度"><span style="width:${progress}%"></span></div>
@@ -171,35 +226,58 @@ export function initLessonExperience({ root, experience, onClose, onComplete }: 
   let state = loadState(storageKey, experience);
 
   const save = () => localStorage.setItem(storageKey, JSON.stringify(state));
-  const render = (focusSelector = "[data-view-title]") => {
+  const render = (focusSelector = "[data-view-title]", resetScroll = false) => {
     root.innerHTML = `<div class="investigation-app">
       <header class="investigation-header"><button data-close-investigation aria-label="退出调查，返回课程">← <span>返回课程</span></button><a href="#lesson-01" data-close-investigation><strong>AI /</strong> TRACE LAB</a><div><span>${state.stage === "intro" ? "任务简报" : state.stage === "case" ? `现场 ${state.caseIndex + 1}/${experience.cases.length}` : "调查报告"}</span><button data-reset-investigation>重置</button></div></header>
       ${state.stage === "intro" ? renderIntro(experience, state) : state.stage === "case" ? renderCase(experience, state) : renderReport(experience, state)}
     </div>`;
+    if (resetScroll) root.scrollTop = 0;
     requestAnimationFrame(() => root.querySelector<HTMLElement>(focusSelector)?.focus());
   };
 
-  const reset = () => { state = freshState(); localStorage.removeItem(storageKey); render(); };
+  const reset = () => { state = freshState(); localStorage.removeItem(storageKey); render("[data-view-title]", true); };
 
   root.addEventListener("click", (event) => {
     const target = event.target as HTMLElement;
     if (target.closest("[data-close-investigation]")) { event.preventDefault(); onClose(); return; }
     if (target.closest("[data-reset-investigation]")) { if (window.confirm("确定清除第一课的调查记录并重新开始吗？")) reset(); return; }
-    if (target.closest("[data-begin-investigation]")) { state.stage = "case"; save(); render(); return; }
+    if (target.closest("[data-begin-investigation]")) { state.stage = "case"; save(); render("[data-view-title]", true); return; }
     const item = experience.cases[state.caseIndex]; if (!item) return;
     const answer = answerFor(state, item); state.answers[item.id] = answer;
+    if (target.closest("[data-start-face-scan]")) {
+      answer.scanStarted = true; answer.visualTests = []; answer.activeVisualTest = "clear"; save(); render("[data-face-test]"); return;
+    }
+    const faceTest = target.closest<HTMLButtonElement>("[data-face-test]");
+    if (faceTest) {
+      const testId = faceTest.dataset.faceTest!;
+      answer.visualTests = [...new Set([...(answer.visualTests ?? []), testId])]; answer.activeVisualTest = testId; save();
+      const confidence = faceTestConfidence[testId] ?? faceTestConfidence.clear;
+      const stage = root.querySelector<HTMLElement>("[data-face-mode]"); if (stage) stage.dataset.faceMode = testId;
+      root.querySelectorAll<HTMLElement>("[data-face-confidence], [data-phone-confidence]").forEach((element) => { element.textContent = `${confidence}%`; });
+      root.querySelector<HTMLElement>("[data-face-meter]")?.style.setProperty("width", `${confidence}%`);
+      root.querySelectorAll<HTMLButtonElement>("[data-face-test]").forEach((button) => {
+        button.classList.toggle("is-tested", answer.visualTests!.includes(button.dataset.faceTest!));
+        button.setAttribute("aria-pressed", String(button.dataset.faceTest === testId));
+        button.querySelector("small")!.textContent = answer.visualTests!.includes(button.dataset.faceTest!) ? "已测试" : "试一试";
+      });
+      if (answer.visualTests.length >= 2) {
+        const verdict = root.querySelector<HTMLElement>(".face-verdict"); verdict?.removeAttribute("hidden");
+        if (verdict) root.scrollTo({ top: verdict.offsetTop, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      }
+      return;
+    }
     const initial = target.closest<HTMLButtonElement>("[data-initial-verdict]");
     if (initial) { answer.initial = initial.dataset.initialVerdict as InvestigationVerdict; answer.final = answer.initial; save(); render(`[data-initial-verdict="${answer.initial}"]`); return; }
     const confidence = target.closest<HTMLButtonElement>("[data-confidence]");
     if (confidence) { answer.confidence = Number(confidence.dataset.confidence); save(); render(`[data-confidence="${answer.confidence}"]`); return; }
-    if (target.closest("[data-reveal-evidence]") && answer.initial) { answer.evidenceSeen = true; save(); render("[data-lock-verdict]"); return; }
+    if (target.closest("[data-reveal-evidence]") && answer.initial) { answer.evidenceSeen = true; save(); render("[data-view-title]", true); return; }
     const final = target.closest<HTMLButtonElement>("[data-final-verdict]");
     if (final) { answer.final = final.dataset.finalVerdict as InvestigationVerdict; save(); render(`[data-final-verdict="${answer.final}"]`); return; }
     if (target.closest("[data-lock-verdict]") && answer.final) { answer.resolved = true; save(); render("[data-next-case]"); return; }
     if (target.closest("[data-next-case]")) {
       if (state.caseIndex < experience.cases.length - 1) state.caseIndex += 1;
       else state.stage = "report";
-      save(); render(); return;
+      save(); render("[data-view-title]", true); return;
     }
     if (target.closest("[data-complete-investigation]")) { state.completed = true; save(); onComplete(); render("[data-complete-investigation]"); }
   });

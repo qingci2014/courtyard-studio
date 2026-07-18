@@ -37,5 +37,6 @@ describe("课程唯一数据源", () => {
     expect(experience?.cases).toHaveLength(6);
     expect(new Set(experience?.cases.map((item) => item.verdict))).toEqual(new Set(["ai", "automation", "uncertain"]));
     expect(experience?.cases.every((item) => item.clue && item.explanation && item.mechanism.humanImpact)).toBe(true);
+    expect(experience?.cases[0]?.media?.video).toBe("/media/lesson01-face-unlock-loop.mp4");
   });
 });

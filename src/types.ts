@@ -34,6 +34,7 @@ export type InvestigationVerdict = "ai" | "automation" | "uncertain";
 export interface InvestigationCase {
   id: string; time: string; scene: string; title: string; description: string; clue: string;
   verdict: InvestigationVerdict; concept: string; explanation: string;
+  media?: { video: string };
   mechanism: { task: string; input: string; operation: string; output: string; humanImpact: string };
 }
 export interface LessonExperience {
