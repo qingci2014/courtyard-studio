@@ -14,7 +14,15 @@ body.experience-open { overflow: hidden; }
 .investigation-briefing h1, .case-scene h1, .report-heading h1 { max-width: 860px; margin: .75rem 0 1.25rem; font-size: clamp(2.8rem, 6vw, 6rem); line-height: .98; letter-spacing: -.055em; }
 .investigation-briefing > p:not(.investigation-eyebrow):not(.investigation-question) { max-width: 650px; color: #98a4bc; line-height: 1.8; }
 .investigation-question { max-width: 650px; color: #eaf0ff; font-size: clamp(1.05rem, 2vw, 1.35rem); }
-.estimate-control { max-width: 650px; margin: 2rem 0 1.2rem; padding: 1rem 1.1rem; border: 1px solid rgba(225,235,255,.14); border-radius: 14px; background: rgba(255,255,255,.025); }
+.case-preview { max-width: 650px; margin-top: 1.4rem; }
+.case-preview > div { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: .65rem; }
+.case-preview > div strong { color: #e8efff; font-size: .76rem; }.case-preview > div small { color: #6f7d97; font-size: .64rem; }
+.case-preview ol { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .55rem; margin: 0; padding: 0; list-style: none; }
+.case-preview li { min-width: 0; display: grid; grid-template-columns: 28px 1fr; gap: .55rem; align-items: center; min-height: 64px; padding: .55rem .65rem; border: 1px solid rgba(225,235,255,.12); border-radius: 10px; background: rgba(255,255,255,.025); }
+.case-preview li > span { color: var(--trace); font-size: .62rem; }.case-preview li div { min-width: 0; }
+.case-preview li small, .case-preview li strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.case-preview li small { color: #73809a; font-size: .58rem; }.case-preview li strong { margin-top: .2rem; color: #dbe5f7; font-size: .67rem; }
+.estimate-control { max-width: 650px; margin: 1.2rem 0; padding: 1rem 1.1rem; border: 1px solid rgba(225,235,255,.14); border-radius: 14px; background: rgba(255,255,255,.025); }
 .estimate-control label { display: block; margin-bottom: .85rem; color: #cbd5e8; font-size: .78rem; }
 .estimate-control > div { display: grid; grid-template-columns: 1fr 72px; gap: 1rem; align-items: center; }
 .estimate-control input { accent-color: var(--trace); }
@@ -31,9 +39,19 @@ body.experience-open { overflow: hidden; }
 .phone-alert small { display: block; color: #7f8ba6; font-size: .62rem; }
 .phone-alert strong { display: block; margin-top: .35rem; font-size: .88rem; line-height: 1.45; }
 .phone-alert p { margin: .35rem 0 0; color: #929eb6; font-size: .68rem; }
-.phone-scan { position: absolute; inset: auto 1rem 1rem; height: 31%; display: grid; place-items: center; overflow: hidden; border-radius: 28px; background: radial-gradient(circle, rgba(100,230,255,.13), transparent 62%); }
-.phone-scan b { width: 120px; height: 120px; border: 1px solid rgba(100,230,255,.4); border-radius: 50%; box-shadow: 0 0 0 24px rgba(100,230,255,.03), 0 0 0 50px rgba(100,230,255,.02); }
-.phone-scan span { position: absolute; bottom: 1.2rem; color: var(--trace); font-size: .58rem; letter-spacing: .18em; }
+.phone-scan { position: absolute; left: 50%; bottom: 9rem; width: 260px; height: 260px; display: grid; place-items: center; overflow: visible; transform: translateX(-50%); border: 0; border-radius: 50%; background: radial-gradient(circle, rgba(100,230,255,.16), rgba(100,230,255,.04) 48%, transparent 70%); color: var(--trace); cursor: pointer; isolation: isolate; transition: transform .25s, filter .25s; }
+.phone-scan::before { content: ""; position: absolute; inset: 18px; border: 1px solid rgba(100,230,255,.16); border-radius: 50%; animation: case-ring 1.8s ease-out infinite; }
+.phone-scan::after { content: ""; position: absolute; z-index: 1; left: 21%; width: 58%; height: 1px; background: linear-gradient(90deg, transparent, rgba(100,230,255,.9), transparent); box-shadow: 0 0 12px rgba(100,230,255,.7); animation: case-sweep 2.2s ease-in-out infinite; }
+.phone-scan b { position: absolute; inset: 54px; border: 1px solid rgba(100,230,255,.58); border-radius: 50%; box-shadow: 0 0 0 22px rgba(100,230,255,.045), 0 0 0 44px rgba(100,230,255,.02), 0 0 28px rgba(100,230,255,.14); animation: case-core 1.8s ease-in-out infinite; }
+.phone-scan span { position: relative; z-index: 2; width: 176px; display: grid; justify-items: center; text-align: center; }
+.phone-scan span strong { max-width: 160px; color: #eefdff; font-size: .86rem; line-height: 1.45; letter-spacing: .03em; }
+.phone-scan span small { margin-top: .35rem; color: #80a9b4; font-size: .58rem; letter-spacing: .12em; }
+.phone-scan span i { width: 28px; height: 28px; display: grid; place-items: center; margin-top: .65rem; border: 1px solid rgba(100,230,255,.55); border-radius: 50%; font-style: normal; animation: case-arrow 1.15s ease-in-out infinite; }
+.phone-scan:hover { transform: translateX(-50%) scale(1.04); filter: brightness(1.18); }.phone-scan:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+@keyframes case-ring { 0% { transform: scale(.76); opacity: 0; } 35% { opacity: .8; } 100% { transform: scale(1.08); opacity: 0; } }
+@keyframes case-core { 50% { box-shadow: 0 0 0 28px rgba(100,230,255,.06), 0 0 0 52px rgba(100,230,255,.025), 0 0 40px rgba(100,230,255,.24); } }
+@keyframes case-sweep { 0%,100% { top: 31%; opacity: .2; } 50% { top: 67%; opacity: 1; } }
+@keyframes case-arrow { 50% { transform: translateX(5px); border-color: var(--trace); box-shadow: 0 0 14px rgba(100,230,255,.3); } }
 .case-progress { position: sticky; z-index: 19; top: 68px; height: 3px; background: rgba(255,255,255,.05); }
 .case-progress span { display: block; height: 100%; background: linear-gradient(90deg, var(--trace), #a78bfa); transition: width .35s; }
 .face-unlock-game { min-height: calc(100svh - 68px); padding-top: 3px; background: #030611; }
@@ -136,14 +154,14 @@ body.experience-open { overflow: hidden; }
 .report-actions { display: flex; justify-content: flex-end; gap: .8rem; margin-top: 1.5rem; }
 
 @media (max-width: 900px) {
-  .investigation-intro { grid-template-columns: 1fr; }.investigation-phone { display: none; }
+  .investigation-intro { grid-template-columns: 1fr; align-items: start; }.investigation-phone { width: 100%; max-width: 650px; min-height: 320px; aspect-ratio: auto; justify-self: start; border-radius: 32px; }.phone-speaker, .investigation-phone > span, .phone-alert { display: none; }.phone-scan { bottom: 1.9rem; }
   .case-layout { grid-template-columns: 1fr; }.case-scene { position: relative; top: auto; height: auto; min-height: 540px; border-right: 0; border-bottom: 1px solid rgba(225,235,255,.12); }.case-workbench { padding-top: 3rem; }
   .footprint-map { min-height: 580px; }.footprint-node { width: 190px; }
 }
 
 @media (max-width: 650px) {
   .investigation-header { grid-template-columns: 1fr auto; height: 62px; }.investigation-header > a { display: none; }.investigation-header > div { grid-column: 2; }.investigation-header > div > span { display: none; }
-  .investigation-intro { min-height: calc(100svh - 62px); padding-top: 2.5rem; }.investigation-briefing h1, .report-heading h1 { font-size: clamp(2.6rem, 14vw, 4.3rem); }
+  .investigation-intro { min-height: calc(100svh - 62px); padding-top: 2.5rem; }.investigation-briefing h1, .report-heading h1 { font-size: clamp(2.6rem, 14vw, 4.3rem); }.case-preview ol { grid-template-columns: repeat(2,minmax(0,1fr)); }.case-preview > div { align-items: end; }.case-preview > div small { text-align: right; }
   .case-progress { top: 62px; }.case-layout { min-height: calc(100svh - 65px); }.case-scene { min-height: 500px; padding: 2rem 1rem; }.case-workbench { padding: 2.5rem 1rem 4rem; }
   .investigation-choices { grid-template-columns: 1fr; }.investigation-choice { min-height: 70px; grid-template-columns: 42px 1fr; justify-items: start; text-align: left; }
   .mechanism-flow article { grid-template-columns: 82px 1fr; }.evidence-heading { display: grid; }.case-workbench .investigation-primary { width: 100%; }
@@ -155,5 +173,5 @@ body.experience-open { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .case-progress span { transition: none; }
-  .phone-ar i, .scan-trigger > span { animation: none; }
+  .phone-ar i, .scan-trigger > span, .phone-scan::before, .phone-scan::after, .phone-scan b, .phone-scan span i { animation: none; }
 }
