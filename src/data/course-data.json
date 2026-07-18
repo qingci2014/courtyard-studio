@@ -1,0 +1,1093 @@
+{
+  "meta": {
+    "courseTitle": "人工智能通识：理解、使用与共创",
+    "courseSubtitle": "面向大一学生的32课时人工智能素养课程",
+    "audience": "大一本科生；不限专业；不要求编程基础",
+    "totalLessons": 32,
+    "lessonDurationMinutes": 45,
+    "semesterWeeks": 16,
+    "lessonsPerWeek": 2,
+    "language": "zh-CN",
+    "deliveryMode": "讲授、互动可视化、案例讨论、无代码实验、项目制学习",
+    "siteTagline": "理解AI，驾驭AI，而不是被AI定义",
+    "siteDescription": "从原理、应用、验证、伦理到系统设计，建立可迁移的人工智能素养。"
+  },
+  "competencyFramework": {
+    "dimensions": [
+      {
+        "id": "human-centered",
+        "label": "以人为本",
+        "description": "保持人的能动性、判断、责任与学习目标。"
+      },
+      {
+        "id": "ethics",
+        "label": "AI伦理",
+        "description": "识别公平、隐私、安全、版权、真实性与社会影响。"
+      },
+      {
+        "id": "techniques",
+        "label": "AI技术与应用",
+        "description": "理解数据、机器学习、神经网络、大模型和多模态的核心机制。"
+      },
+      {
+        "id": "system-design",
+        "label": "AI系统设计",
+        "description": "将问题、模型、知识、工具、验证和人工监督组合为可控系统。"
+      }
+    ],
+    "levels": [
+      {
+        "id": "understand",
+        "label": "理解"
+      },
+      {
+        "id": "apply",
+        "label": "应用"
+      },
+      {
+        "id": "create",
+        "label": "创造"
+      }
+    ]
+  },
+  "learningOutcomes": [
+    "能够用非神秘化语言解释人工智能、机器学习、深度学习和生成式AI的关系。",
+    "能够根据任务性质选择规则、预测模型、生成模型或人类判断，并说明选择依据。",
+    "能够设计、测试和迭代提示、检索增强流程及简单智能体工作流。",
+    "能够核验AI输出中的事实、证据、来源和不确定性，而不把流畅表达当成可靠性。",
+    "能够识别偏见、隐私、安全、版权、学术诚信和社会影响，并提出可执行的缓解措施。",
+    "能够围绕本专业或校园真实问题，设计并展示一个有价值、可验证、有人类监督的AI方案。"
+  ],
+  "modules": [
+    {
+      "id": "m1",
+      "order": 1,
+      "title": "理解AI",
+      "subtitle": "从日常经验建立人工智能全景图",
+      "shortTitle": "理解AI",
+      "color": "#63E6FF",
+      "competencyFocus": [
+        "human-centered",
+        "techniques"
+      ],
+      "lessonRange": [
+        1,
+        4
+      ],
+      "description": "澄清人工智能、机器学习与生成式AI的关系，理解技术演进、典型能力与基本边界。"
+    },
+    {
+      "id": "m2",
+      "order": 2,
+      "title": "数据与机器学习",
+      "subtitle": "理解机器如何从数据中形成判断",
+      "shortTitle": "数据学习",
+      "color": "#72E6A8",
+      "competencyFocus": [
+        "techniques",
+        "system-design"
+      ],
+      "lessonRange": [
+        5,
+        8
+      ],
+      "description": "用直观案例理解数据、特征、标签、训练、测试、评价指标与过拟合，并完成一次无代码模型实验。"
+    },
+    {
+      "id": "m3",
+      "order": 3,
+      "title": "神经网络与多模态",
+      "subtitle": "理解深度学习如何处理图像、声音与现实世界",
+      "shortTitle": "神经感知",
+      "color": "#9B8CFF",
+      "competencyFocus": [
+        "techniques"
+      ],
+      "lessonRange": [
+        9,
+        12
+      ],
+      "description": "通过可视化理解神经网络、表征学习、计算机视觉、语音、多模态与具身智能。"
+    },
+    {
+      "id": "m4",
+      "order": 4,
+      "title": "生成式AI与大模型",
+      "subtitle": "看懂语言模型如何生成、为何出错、怎样有效沟通",
+      "shortTitle": "生成模型",
+      "color": "#FF83C8",
+      "competencyFocus": [
+        "techniques",
+        "human-centered"
+      ],
+      "lessonRange": [
+        13,
+        18
+      ],
+      "description": "理解Token、向量、注意力、Transformer、训练与对齐、随机生成、幻觉和结构化提示。"
+    },
+    {
+      "id": "m5",
+      "order": 5,
+      "title": "知识增强与智能体",
+      "subtitle": "让模型连接资料、工具与工作流程",
+      "shortTitle": "知识行动",
+      "color": "#FFB86C",
+      "competencyFocus": [
+        "system-design",
+        "techniques"
+      ],
+      "lessonRange": [
+        19,
+        22
+      ],
+      "description": "理解检索增强生成、工具调用、工作流和智能体，并设计一个有边界、可监督的AI助手。"
+    },
+    {
+      "id": "m6",
+      "order": 6,
+      "title": "学习、创造与职业",
+      "subtitle": "把AI转化为认知工具和专业能力",
+      "shortTitle": "学习创造",
+      "color": "#69D9D0",
+      "competencyFocus": [
+        "human-centered",
+        "system-design"
+      ],
+      "lessonRange": [
+        23,
+        26
+      ],
+      "description": "训练学生在学习、研究、写作、视觉表达、代码和专业场景中进行高质量的人机协作。"
+    },
+    {
+      "id": "m7",
+      "order": 7,
+      "title": "风险、伦理与社会",
+      "subtitle": "识别偏见、隐私、安全、版权与社会影响",
+      "shortTitle": "风险伦理",
+      "color": "#FF7B7B",
+      "competencyFocus": [
+        "ethics",
+        "human-centered"
+      ],
+      "lessonRange": [
+        27,
+        30
+      ],
+      "description": "以案例审计AI系统的公平性、隐私、安全、版权、信息真实性、治理与可持续性。"
+    },
+    {
+      "id": "m8",
+      "order": 8,
+      "title": "综合设计项目",
+      "subtitle": "共同设计一个负责任、可验证的AI方案",
+      "shortTitle": "综合项目",
+      "color": "#FFD76A",
+      "competencyFocus": [
+        "system-design",
+        "ethics",
+        "human-centered"
+      ],
+      "lessonRange": [
+        31,
+        32
+      ],
+      "description": "将问题定义、AI能力匹配、原型、证据、风险控制和表达整合为最终项目。"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "lesson-01",
+      "number": 1,
+      "week": 1,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m1",
+      "title": "AI就在身边",
+      "drivingQuestion": "我们每天接触的哪些功能真正使用了AI？",
+      "concepts": [
+        "人工智能",
+        "任务",
+        "感知",
+        "预测",
+        "生成"
+      ],
+      "inClassActivity": "个人AI足迹盘点：按起床、出行、学习、娱乐、消费五个场景标注AI介入点，并区分“自动化”与“学习型系统”。",
+      "learningArtifact": "一张“我的一天中的AI”关系图。",
+      "competencyDimension": "human-centered",
+      "competencyDimensionLabel": "以人为本",
+      "progressionLevel": "understand",
+      "progressionLevelLabel": "理解",
+      "visualKey": "constellation",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-02",
+      "number": 2,
+      "week": 1,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m1",
+      "title": "从规则机器到生成模型",
+      "drivingQuestion": "人工智能为什么会在不同历史阶段反复升温与降温？",
+      "concepts": [
+        "符号主义",
+        "专家系统",
+        "机器学习",
+        "深度学习",
+        "生成式AI"
+      ],
+      "inClassActivity": "用可拖拽时间轴把关键技术范式、数据规模、算力与典型应用配对，讨论每次跃迁背后的条件。",
+      "learningArtifact": "150字技术跃迁解释：不是“突然聪明”，而是哪些条件同时成熟。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "understand",
+      "progressionLevelLabel": "理解",
+      "visualKey": "history-timeline",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-03",
+      "number": 3,
+      "week": 2,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m1",
+      "title": "程序、机器学习与生成式AI",
+      "drivingQuestion": "同一个任务，什么时候应该写规则，什么时候应该训练模型，什么时候适合生成式AI？",
+      "concepts": [
+        "确定性规则",
+        "统计学习",
+        "概率生成",
+        "任务适配",
+        "成本与风险"
+      ],
+      "inClassActivity": "任务分类挑战：将垃圾邮件识别、税额计算、海报创意、成绩录入等案例拖入三类技术方案，并说明理由。",
+      "learningArtifact": "完成一张“任务—技术路径”判断表。",
+      "competencyDimension": "system-design",
+      "competencyDimensionLabel": "AI系统设计",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "paradigm-sorter",
+      "featuredInteractive": true
+    },
+    {
+      "id": "lesson-04",
+      "number": 4,
+      "week": 2,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m1",
+      "title": "能力边界：AI会什么、不会什么",
+      "drivingQuestion": "模型表现得像理解，是否等于它真的理解？",
+      "concepts": [
+        "模式识别",
+        "泛化",
+        "常识缺口",
+        "可靠性",
+        "人类监督"
+      ],
+      "inClassActivity": "能力边界辩论：针对“AI能否独立做医生、教师、法官”等命题，从能力、责任、证据和后果四个角度陈述。",
+      "learningArtifact": "一页AI能力边界清单：可做、需监督、不可委托。",
+      "competencyDimension": "human-centered",
+      "competencyDimensionLabel": "以人为本",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "capability-boundary",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-05",
+      "number": 5,
+      "week": 3,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m2",
+      "title": "数据如何变成训练材料",
+      "drivingQuestion": "现实世界的信息怎样被转化成模型可以学习的形式？",
+      "concepts": [
+        "样本",
+        "特征",
+        "标签",
+        "数据质量",
+        "数据集偏差"
+      ],
+      "inClassActivity": "数据集拆解：以“校园垃圾分类”为例，决定采集对象、标签规则、缺失情况和可能偏差。",
+      "learningArtifact": "一张简化数据卡（Dataset Card）。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "understand",
+      "progressionLevelLabel": "理解",
+      "visualKey": "data-pipeline",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-06",
+      "number": 6,
+      "week": 3,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m2",
+      "title": "分类、回归与推荐",
+      "drivingQuestion": "预测类别、预测数值和推荐排序，本质上有什么不同？",
+      "concepts": [
+        "分类",
+        "回归",
+        "排序",
+        "推荐系统",
+        "目标变量"
+      ],
+      "inClassActivity": "模型任务匹配：根据输入、输出和评价标准，为十个校园问题选择合适的机器学习任务。",
+      "learningArtifact": "三类任务各设计一个跨专业案例。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "task-matcher",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-07",
+      "number": 7,
+      "week": 4,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m2",
+      "title": "模型怎样被评价",
+      "drivingQuestion": "准确率很高的模型，为什么仍可能非常糟糕？",
+      "concepts": [
+        "训练集与测试集",
+        "混淆矩阵",
+        "准确率",
+        "精确率与召回率",
+        "过拟合"
+      ],
+      "inClassActivity": "阈值实验：拖动决策阈值，观察误报、漏报、精确率和召回率变化，并比较医疗筛查与垃圾邮件场景。",
+      "learningArtifact": "一份200字评价指标选择说明。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "confusion-matrix",
+      "featuredInteractive": true
+    },
+    {
+      "id": "lesson-08",
+      "number": 8,
+      "week": 4,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m2",
+      "title": "无代码训练一个分类器",
+      "drivingQuestion": "从数据到模型的完整闭环到底发生了什么？",
+      "concepts": [
+        "数据划分",
+        "训练",
+        "验证",
+        "测试",
+        "误差分析"
+      ],
+      "inClassActivity": "使用本地模拟数据或无代码工具完成一个小型分类任务，记录数据、训练结果、失败样本和改进方案。",
+      "learningArtifact": "模型实验记录表与失败案例截图。",
+      "competencyDimension": "system-design",
+      "competencyDimensionLabel": "AI系统设计",
+      "progressionLevel": "create",
+      "progressionLevelLabel": "创造",
+      "visualKey": "classifier-lab",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-09",
+      "number": 9,
+      "week": 5,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m3",
+      "title": "神经网络：把复杂问题拆成层",
+      "drivingQuestion": "神经网络中的“神经元”和“层”究竟在计算什么？",
+      "concepts": [
+        "权重",
+        "偏置",
+        "激活函数",
+        "前向传播",
+        "层级表示"
+      ],
+      "inClassActivity": "用可视化网络调整权重，观察输入变化如何传递到输出；讨论“节点像神经元”这一比喻的限度。",
+      "learningArtifact": "手绘或数字化的一页神经网络解释图。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "understand",
+      "progressionLevelLabel": "理解",
+      "visualKey": "neural-network",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-10",
+      "number": 10,
+      "week": 5,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m3",
+      "title": "深度学习与表征",
+      "drivingQuestion": "为什么深层网络能自动找到人难以手工描述的特征？",
+      "concepts": [
+        "表征学习",
+        "特征空间",
+        "嵌入",
+        "层级抽象",
+        "迁移学习"
+      ],
+      "inClassActivity": "特征空间观察：比较原始像素、人工特征和学习到的向量表示，解释相似样本为何聚在一起。",
+      "learningArtifact": "用生活比喻解释“表征学习”，并标注比喻不准确处。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "understand",
+      "progressionLevelLabel": "理解",
+      "visualKey": "feature-space",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-11",
+      "number": 11,
+      "week": 6,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m3",
+      "title": "机器如何看、听与识别",
+      "drivingQuestion": "图像识别和语音识别为什么既强大又容易被环境扰动？",
+      "concepts": [
+        "计算机视觉",
+        "卷积与局部模式",
+        "语音识别",
+        "鲁棒性",
+        "对抗样本"
+      ],
+      "inClassActivity": "失败案例诊断：分析光线、口音、背景噪声、遮挡等因素如何改变模型输出。",
+      "learningArtifact": "一张“感知系统失效条件”检查表。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "perception-stack",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-12",
+      "number": 12,
+      "week": 6,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m3",
+      "title": "多模态与具身智能",
+      "drivingQuestion": "当模型同时处理文字、图像、声音和动作时，能力发生了什么变化？",
+      "concepts": [
+        "多模态",
+        "跨模态对齐",
+        "视觉语言模型",
+        "具身智能",
+        "传感与行动"
+      ],
+      "inClassActivity": "多模态任务设计：为校园导览、无障碍辅助或实验室安全设计输入、输出、传感器和人工接管机制。",
+      "learningArtifact": "一张多模态系统输入—处理—输出图。",
+      "competencyDimension": "system-design",
+      "competencyDimensionLabel": "AI系统设计",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "multimodal-orbit",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-13",
+      "number": 13,
+      "week": 7,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m4",
+      "title": "语言如何变成Token",
+      "drivingQuestion": "模型看到的是文字、词语，还是另一种离散符号？",
+      "concepts": [
+        "Token",
+        "分词",
+        "词表",
+        "上下文",
+        "序列"
+      ],
+      "inClassActivity": "Token拆分实验：比较中文、英文、数字、代码和罕见词的切分差异，讨论成本与歧义。",
+      "learningArtifact": "一页Token观察记录。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "understand",
+      "progressionLevelLabel": "理解",
+      "visualKey": "tokenizer",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-14",
+      "number": 14,
+      "week": 7,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m4",
+      "title": "向量、嵌入与相似性",
+      "drivingQuestion": "计算机如何把意义放进一组数字里？",
+      "concepts": [
+        "向量",
+        "嵌入",
+        "语义距离",
+        "相似度",
+        "向量空间"
+      ],
+      "inClassActivity": "二维嵌入空间探索：移动概念点，观察“相似”与“相关”并非同一回事。",
+      "learningArtifact": "用五组概念解释语义相似、主题相关和反义关系。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "understand",
+      "progressionLevelLabel": "理解",
+      "visualKey": "embedding-space",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-15",
+      "number": 15,
+      "week": 8,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m4",
+      "title": "注意力与Transformer",
+      "drivingQuestion": "模型在生成下一个Token时，如何决定关注上下文中的哪些位置？",
+      "concepts": [
+        "注意力",
+        "查询—键—值",
+        "位置关系",
+        "Transformer",
+        "上下文依赖"
+      ],
+      "inClassActivity": "注意力流可视化：点击句中词语观察关联强度，比较代词指代、长句和歧义句。",
+      "learningArtifact": "一段面向非计算机专业同学的Transformer解释。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "understand",
+      "progressionLevelLabel": "理解",
+      "visualKey": "attention-flow",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-16",
+      "number": 16,
+      "week": 8,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m4",
+      "title": "大模型如何训练与对齐",
+      "drivingQuestion": "从海量文本到能对话的模型，中间经历了哪些阶段？",
+      "concepts": [
+        "预训练",
+        "指令微调",
+        "人类反馈",
+        "对齐",
+        "安全策略"
+      ],
+      "inClassActivity": "训练流程拼图：将数据准备、预训练、微调、评测、部署和反馈闭环排序，并标注每步风险。",
+      "learningArtifact": "一张大模型生命周期图。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "understand",
+      "progressionLevelLabel": "理解",
+      "visualKey": "training-pipeline",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-17",
+      "number": 17,
+      "week": 9,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m4",
+      "title": "生成、随机性与幻觉",
+      "drivingQuestion": "模型为什么能说得流畅，却可能把错误编得很像真的？",
+      "concepts": [
+        "下一个Token预测",
+        "概率分布",
+        "温度",
+        "幻觉",
+        "不确定性"
+      ],
+      "inClassActivity": "下一个Token实验：调整温度并观察输出多样性、稳定性和事实风险的变化。",
+      "learningArtifact": "三类幻觉案例及相应核验策略。",
+      "competencyDimension": "techniques",
+      "competencyDimensionLabel": "AI技术与应用",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "next-token",
+      "featuredInteractive": true
+    },
+    {
+      "id": "lesson-18",
+      "number": 18,
+      "week": 9,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m4",
+      "title": "提示词不是咒语：任务规格与迭代",
+      "drivingQuestion": "有效提示的关键是神秘措辞，还是清晰的任务设计？",
+      "concepts": [
+        "目标",
+        "上下文",
+        "约束",
+        "示例",
+        "输出格式",
+        "评价标准"
+      ],
+      "inClassActivity": "提示构建器：将模糊需求逐步补充为可测试任务，比较一次性长提示与分步协作。",
+      "learningArtifact": "提示词测试报告：版本、输出、问题、修改和结论。",
+      "competencyDimension": "human-centered",
+      "competencyDimensionLabel": "以人为本",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "prompt-builder",
+      "featuredInteractive": true
+    },
+    {
+      "id": "lesson-19",
+      "number": 19,
+      "week": 10,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m5",
+      "title": "让模型查资料：检索与RAG",
+      "drivingQuestion": "模型记忆中的知识与当前可核验资料，应该怎样结合？",
+      "concepts": [
+        "检索",
+        "切分",
+        "向量搜索",
+        "上下文注入",
+        "引用与溯源"
+      ],
+      "inClassActivity": "RAG管线模拟：从文档库选择片段，观察检索质量如何影响回答与引用。",
+      "learningArtifact": "为一门课程设计小型知识库目录与检索规则。",
+      "competencyDimension": "system-design",
+      "competencyDimensionLabel": "AI系统设计",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "rag-pipeline",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-20",
+      "number": 20,
+      "week": 10,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m5",
+      "title": "让模型会用工具：函数与工作流",
+      "drivingQuestion": "仅靠语言生成与调用计算器、数据库、日历等工具有什么本质差别？",
+      "concepts": [
+        "工具调用",
+        "函数参数",
+        "工作流",
+        "权限",
+        "错误处理"
+      ],
+      "inClassActivity": "把“组织一次社团活动”拆成可验证步骤，标注每一步由模型、工具或人负责。",
+      "learningArtifact": "一张人—模型—工具职责泳道图。",
+      "competencyDimension": "system-design",
+      "competencyDimensionLabel": "AI系统设计",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "tool-call",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-21",
+      "number": 21,
+      "week": 11,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m5",
+      "title": "智能体：计划、记忆、行动、反馈",
+      "drivingQuestion": "智能体与普通聊天机器人相比，多了哪些结构，也多了哪些风险？",
+      "concepts": [
+        "目标分解",
+        "计划",
+        "记忆",
+        "工具使用",
+        "反馈循环",
+        "人工接管"
+      ],
+      "inClassActivity": "智能体循环沙盘：改变权限、记忆和停止条件，观察效率与失控风险的变化。",
+      "learningArtifact": "一份智能体安全边界清单。",
+      "competencyDimension": "system-design",
+      "competencyDimensionLabel": "AI系统设计",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "agent-loop",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-22",
+      "number": 22,
+      "week": 11,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m5",
+      "title": "设计一个可控AI助手",
+      "drivingQuestion": "一个真正有用的AI助手，应该先设计功能，还是先设计边界？",
+      "concepts": [
+        "用户需求",
+        "成功标准",
+        "最小可行流程",
+        "监督点",
+        "失败回退"
+      ],
+      "inClassActivity": "小组完成AI助手蓝图：用户、场景、输入、知识、工具、输出、验证、拒绝与人工接管。",
+      "learningArtifact": "一页AI助手系统卡。",
+      "competencyDimension": "system-design",
+      "competencyDimensionLabel": "AI系统设计",
+      "progressionLevel": "create",
+      "progressionLevelLabel": "创造",
+      "visualKey": "workflow-canvas",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-23",
+      "number": 23,
+      "week": 12,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m6",
+      "title": "AI辅助学习：从代写到认知伙伴",
+      "drivingQuestion": "怎样使用AI提高理解，而不是把思考外包出去？",
+      "concepts": [
+        "苏格拉底式提问",
+        "检索练习",
+        "反馈",
+        "元认知",
+        "认知卸载"
+      ],
+      "inClassActivity": "将同一学习任务分别设计成“直接给答案”“提示—追问”“测验—反馈”三种模式并比较学习效果。",
+      "learningArtifact": "个人AI学习协议：可用、慎用、禁用场景。",
+      "competencyDimension": "human-centered",
+      "competencyDimensionLabel": "以人为本",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "learning-loop",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-24",
+      "number": 24,
+      "week": 12,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m6",
+      "title": "AI辅助研究：问题、证据与引用",
+      "drivingQuestion": "AI能否替我们完成可靠的学术研究？",
+      "concepts": [
+        "研究问题",
+        "检索策略",
+        "证据等级",
+        "来源核验",
+        "引用",
+        "可复现性"
+      ],
+      "inClassActivity": "证据阶梯练习：对一段AI生成论述逐句核验，区分事实、推断、观点和未知。",
+      "learningArtifact": "一份带来源审计的迷你研究备忘录。",
+      "competencyDimension": "human-centered",
+      "competencyDimensionLabel": "以人为本",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "evidence-ladder",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-25",
+      "number": 25,
+      "week": 13,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m6",
+      "title": "AI辅助创造：文字、图像、视频与代码",
+      "drivingQuestion": "人机共创中，创意、选择、责任和署名分别属于谁？",
+      "concepts": [
+        "共创流程",
+        "迭代",
+        "风格控制",
+        "来源披露",
+        "作者责任"
+      ],
+      "inClassActivity": "跨媒介创作冲刺：从概念、草图、生成、筛选、修改到说明，保留完整决策轨迹。",
+      "learningArtifact": "一件作品与一页AI使用说明。",
+      "competencyDimension": "human-centered",
+      "competencyDimensionLabel": "以人为本",
+      "progressionLevel": "create",
+      "progressionLevelLabel": "创造",
+      "visualKey": "co-creation",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-26",
+      "number": 26,
+      "week": 13,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m6",
+      "title": "AI与专业、职业和工作重构",
+      "drivingQuestion": "AI更可能替代整个职业，还是重组职业中的任务？",
+      "concepts": [
+        "任务分解",
+        "增强与替代",
+        "新角色",
+        "人类优势",
+        "持续学习"
+      ],
+      "inClassActivity": "职业任务矩阵：选一个专业，把工作拆成高频/低频、低风险/高风险、可自动化/需人判断。",
+      "learningArtifact": "个人三年AI能力发展路线图。",
+      "competencyDimension": "human-centered",
+      "competencyDimensionLabel": "以人为本",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "career-matrix",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-27",
+      "number": 27,
+      "week": 14,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m7",
+      "title": "偏见、公平与可解释性",
+      "drivingQuestion": "对所有人使用同一规则，就一定公平吗？",
+      "concepts": [
+        "数据偏见",
+        "群体公平",
+        "个体公平",
+        "代理变量",
+        "可解释性"
+      ],
+      "inClassActivity": "公平性滑杆实验：调整不同群体阈值，观察整体准确率、误伤和机会差异之间的冲突。",
+      "learningArtifact": "一份算法公平案例审计。",
+      "competencyDimension": "ethics",
+      "competencyDimensionLabel": "AI伦理",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "fairness-slider",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-28",
+      "number": 28,
+      "week": 14,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m7",
+      "title": "隐私、安全、版权与学术诚信",
+      "drivingQuestion": "哪些信息可以交给AI，哪些不能？生成内容又该如何使用？",
+      "concepts": [
+        "个人信息",
+        "敏感数据",
+        "提示注入",
+        "版权",
+        "署名",
+        "学术诚信"
+      ],
+      "inClassActivity": "风险卡片分类：按可直接使用、匿名化后使用、不得上传、需授权四类处理真实校园场景。",
+      "learningArtifact": "个人与团队AI安全使用规范。",
+      "competencyDimension": "ethics",
+      "competencyDimensionLabel": "AI伦理",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "risk-cards",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-29",
+      "number": 29,
+      "week": 15,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m7",
+      "title": "深度伪造与信息验证",
+      "drivingQuestion": "当文字、图片、音频和视频都可以生成时，我们凭什么相信？",
+      "concepts": [
+        "深度伪造",
+        "来源链",
+        "横向核验",
+        "元数据",
+        "反向搜索",
+        "不确定性表达"
+      ],
+      "inClassActivity": "信息验证挑战：在限定时间内对多模态材料建立证据链，并明确“已证实、较可能、未知”。",
+      "learningArtifact": "一张五步信息核验流程图。",
+      "competencyDimension": "ethics",
+      "competencyDimensionLabel": "AI伦理",
+      "progressionLevel": "apply",
+      "progressionLevelLabel": "应用",
+      "visualKey": "verification-game",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-30",
+      "number": 30,
+      "week": 15,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m7",
+      "title": "人类能动性、治理与可持续",
+      "drivingQuestion": "谁决定AI系统的目标、边界与责任？",
+      "concepts": [
+        "人类能动性",
+        "问责",
+        "治理",
+        "风险管理",
+        "劳动影响",
+        "能源与环境"
+      ],
+      "inClassActivity": "风险罗盘：围绕一个AI应用完成治理、情境映射、风险测量和风险处置四象限分析。",
+      "learningArtifact": "一页AI影响与治理备忘录。",
+      "competencyDimension": "ethics",
+      "competencyDimensionLabel": "AI伦理",
+      "progressionLevel": "create",
+      "progressionLevelLabel": "创造",
+      "visualKey": "risk-compass",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-31",
+      "number": 31,
+      "week": 16,
+      "periodInWeek": 1,
+      "durationMinutes": 45,
+      "moduleId": "m8",
+      "title": "综合项目工作坊",
+      "drivingQuestion": "怎样把真实问题转化为可验证、可负责的AI方案？",
+      "concepts": [
+        "问题定义",
+        "用户",
+        "价值假设",
+        "原型",
+        "测试",
+        "风险控制"
+      ],
+      "inClassActivity": "小组完成项目画布、低保真原型和测试计划；教师进行“能力匹配、证据、风险、范围”四项设计评审。",
+      "learningArtifact": "最终项目原型、系统卡、测试记录与风险登记表。",
+      "competencyDimension": "system-design",
+      "competencyDimensionLabel": "AI系统设计",
+      "progressionLevel": "create",
+      "progressionLevelLabel": "创造",
+      "visualKey": "project-canvas",
+      "featuredInteractive": false
+    },
+    {
+      "id": "lesson-32",
+      "number": 32,
+      "week": 16,
+      "periodInWeek": 2,
+      "durationMinutes": 45,
+      "moduleId": "m8",
+      "title": "展示、答辩与反思",
+      "drivingQuestion": "一个AI方案怎样证明自己不仅新颖，而且有用、可靠、负责任？",
+      "concepts": [
+        "演示",
+        "证据",
+        "同行评审",
+        "局限",
+        "迭代",
+        "反思"
+      ],
+      "inClassActivity": "Demo Day：5分钟演示、3分钟答辩、同行评分；个人完成AI能力前后测与反思。",
+      "learningArtifact": "小组最终交付包与个人反思报告。",
+      "competencyDimension": "human-centered",
+      "competencyDimensionLabel": "以人为本",
+      "progressionLevel": "create",
+      "progressionLevelLabel": "创造",
+      "visualKey": "demo-stage",
+      "featuredInteractive": false
+    }
+  ],
+  "assessment": [
+    {
+      "name": "课堂互动与退出条",
+      "weight": 10,
+      "description": "参与可视化实验、讨论与每周快速反思。"
+    },
+    {
+      "name": "AI实践作品集",
+      "weight": 20,
+      "description": "收录提示测试、数据卡、核验记录、系统图和安全规范。"
+    },
+    {
+      "name": "期中AI输出审计",
+      "weight": 20,
+      "description": "选择一段AI输出，完成事实、来源、推理、偏见与风险审计。"
+    },
+    {
+      "name": "跨专业应用小任务",
+      "weight": 15,
+      "description": "将AI方法迁移到学生所属专业或兴趣领域。"
+    },
+    {
+      "name": "期末小组综合项目",
+      "weight": 30,
+      "description": "提交原型、系统卡、测试证据、风险登记表并参加答辩。"
+    },
+    {
+      "name": "同行评审与个人反思",
+      "weight": 5,
+      "description": "对他组项目进行结构化反馈，并反思个人能力变化。"
+    }
+  ],
+  "finalProjectRubric": [
+    {
+      "criterion": "问题与用户价值",
+      "weight": 20
+    },
+    {
+      "criterion": "AI能力匹配与系统设计",
+      "weight": 20
+    },
+    {
+      "criterion": "测试证据与可靠性",
+      "weight": 20
+    },
+    {
+      "criterion": "伦理、风险与人工监督",
+      "weight": 20
+    },
+    {
+      "criterion": "表达、演示与迭代反思",
+      "weight": 20
+    }
+  ],
+  "featuredLabs": [
+    {
+      "id": "lab-paradigm",
+      "title": "任务技术路线分类器",
+      "lessonId": "lesson-03",
+      "description": "拖拽现实任务，判断应采用规则、机器学习、生成式AI或人类决策。",
+      "implementation": "纯前端拖拽；内置答案与解释；完成后给出任务适配评分。"
+    },
+    {
+      "id": "lab-metrics",
+      "title": "模型评价阈值实验",
+      "lessonId": "lesson-07",
+      "description": "调整阈值，实时观察混淆矩阵、精确率、召回率和误报漏报变化。",
+      "implementation": "本地固定数据；SVG或Canvas绘制；支持键盘调整滑杆。"
+    },
+    {
+      "id": "lab-token",
+      "title": "下一个Token概率实验",
+      "lessonId": "lesson-17",
+      "description": "调整温度，观察候选Token概率与生成多样性的关系。",
+      "implementation": "规则化模拟，不调用外部模型API；用条形图和逐词生成动画表现。"
+    },
+    {
+      "id": "lab-prompt",
+      "title": "结构化提示构建器",
+      "lessonId": "lesson-18",
+      "description": "把模糊需求拆成目标、上下文、约束、示例、格式和评价标准。",
+      "implementation": "表单驱动；即时生成提示模板；使用启发式规则给出完整度反馈。"
+    }
+  ]
+}

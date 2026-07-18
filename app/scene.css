@@ -1,3 +1,0 @@
-.threeStage{position:absolute;inset:0}.threeStage canvas{touch-action:none}.stageTitle{z-index:3;pointer-events:none;text-shadow:0 1px 0 #fff}.controls{z-index:5}.viewTabs{z-index:6}
-.renderPreview{width:100%;height:150px;object-fit:cover;border-radius:9px;margin:14px 0 10px;box-shadow:0 8px 20px #3b271d22}
-.heroRender{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.stageTitle.overPhoto{top:auto;bottom:24px;left:24px;width:310px;padding:17px 19px;border-radius:11px;background:#f7f1e8e8;box-shadow:0 10px 28px #2b1e1740;backdrop-filter:blur(10px)}.stageTitle.overPhoto h2{font-size:25px}.featureList{margin:16px 0;padding:8px 0;border-top:1px solid #ded2c3;border-bottom:1px solid #ded2c3}.featureList p{padding:7px 0!important;color:#57483d!important}
