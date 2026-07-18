@@ -32,6 +32,7 @@ export interface RubricItem { criterion: string; weight: number }
 export interface FeaturedLab { id: string; title: string; lessonId: string; description: string; implementation: string }
 export interface CourseData {
   meta: CourseMeta;
+  studyScaffolds: { conceptPrompts: string[]; selfCheckInstruction: string };
   competencyFramework: { dimensions: FrameworkItem[]; levels: FrameworkItem[] };
   learningOutcomes: string[];
   modules: Module[];

@@ -24,4 +24,10 @@ describe("课程唯一数据源", () => {
   it("总评权重合计100%", () => {
     expect(data.assessment.reduce((sum, item) => sum + item.weight, 0)).toBe(100);
   });
+
+  it("每课知识点均可由JSON中的学习脚手架完整呈现", () => {
+    expect(data.lessons.every((lesson) => lesson.concepts.length >= 3)).toBe(true);
+    expect(data.studyScaffolds.conceptPrompts.length).toBeGreaterThanOrEqual(Math.max(...data.lessons.map((lesson) => lesson.concepts.length)));
+    expect(data.studyScaffolds.selfCheckInstruction.length).toBeGreaterThan(10);
+  });
 });

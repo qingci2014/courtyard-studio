@@ -20,14 +20,19 @@ let galaxyController: { setCompleted: (ids: Set<string>) => void; setVisibleLess
 
 const pad = (value: number) => String(value).padStart(2, "0");
 const moduleFor = (lesson: Lesson) => moduleById.get(lesson.moduleId)!;
+const lessonsForModule = (module: Module) => data.lessons.filter((lesson) => lesson.moduleId === module.id);
+const conceptsForModule = (module: Module) => [...new Set(lessonsForModule(module).flatMap((lesson) => lesson.concepts))];
+
+const conceptStudyPrompts = data.studyScaffolds.conceptPrompts;
 
 function lessonButton(lesson: Lesson, compact = false): string {
   const module = moduleFor(lesson);
   return `<article class="lesson-card${compact ? " compact" : ""}" data-lesson-card="${lesson.id}" style="--module:${module.color}">
     <div class="lesson-meta"><span>${pad(lesson.number)}</span><span>第${lesson.week}周 · ${lesson.periodInWeek}</span><span>${module.shortTitle}</span></div>
     <h3>${lesson.title}</h3>
+    <p class="lesson-kicker">本课要回答</p>
     <p class="driving-question">${lesson.drivingQuestion}</p>
-    ${compact ? "" : `<div class="concepts">${lesson.concepts.map((concept) => `<span>${concept}</span>`).join("")}</div><p class="lesson-detail"><b>课堂活动</b>${lesson.inClassActivity}</p><p class="lesson-detail"><b>学习产物</b>${lesson.learningArtifact}</p>`}
+    ${compact ? "" : `<div class="lesson-knowledge"><strong>核心知识点</strong><ol>${lesson.concepts.map((concept, index) => `<li><span>${index + 1}</span>${concept}</li>`).join("")}</ol></div><p class="lesson-detail outcome"><b>学完能完成</b>${lesson.learningArtifact}</p>`}
     <div class="lesson-footer"><span>${lesson.competencyDimensionLabel} · ${lesson.progressionLevelLabel}</span><div><button class="text-button" data-open-lesson="${lesson.id}">查看详情</button><button class="complete-button" data-toggle-complete="${lesson.id}" aria-pressed="${progress.has(lesson.id)}">${progress.has(lesson.id) ? "✓ 已完成" : "标记完成"}</button></div></div>
   </article>`;
 }
@@ -39,7 +44,7 @@ function renderApp(): void {
       <a class="brand" href="#overview"><span>AI /</span> GENERAL EDUCATION</a>
       <button class="menu-button" data-menu-button aria-expanded="false" aria-controls="primary-nav"><span></span><span></span><span></span><span class="sr-only">打开导航</span></button>
       <nav id="primary-nav" class="primary-nav" aria-label="主要导航">
-        <a href="#overview">课程概览</a><a href="#galaxy">课程星图</a><a href="#lessons">32课时</a><a href="#labs">互动实验</a><a href="#assessment">考核与项目</a><a href="#faq">常见问题</a>
+        <a href="#overview">课程概览</a><a href="#knowledge">知识地图</a><a href="#galaxy">课程星图</a><a href="#lessons">32课时</a><a href="#labs">互动实验</a><a href="#assessment">考核与项目</a>
       </nav>
       <div class="header-actions"><div class="progress-mini" data-progress-summary>已完成 ${progress.size} / 32</div><a class="button small" href="#galaxy">进入星图</a></div>
     </header>
@@ -51,7 +56,7 @@ function renderApp(): void {
           <h1 id="hero-title">${data.meta.siteTagline}</h1>
           <p class="hero-description">${data.meta.siteDescription} 为不同专业的大一学生建立可迁移的人工智能素养。</p>
           <div class="quick-tags"><span>无需编程基础</span><span>${data.meta.semesterWeeks}周</span><span>互动实验</span><span>综合项目</span></div>
-          <div class="hero-actions"><a class="button" href="#galaxy">进入课程星图 <span>↗</span></a><a class="button secondary" href="#lessons">查看32课时</a></div>
+          <div class="hero-actions"><a class="button" href="#knowledge">先看知识地图 <span>↓</span></a><a class="button secondary" href="#lessons">查看32课时</a></div>
           <dl class="hero-stats"><div><dt>${data.modules.length}</dt><dd>知识模块</dd></div><div><dt>${data.meta.totalLessons}</dt><dd>完整课时</dd></div><div><dt>${data.featuredLabs.length}</dt><dd>互动实验</dd></div></dl>
         </div>
         <div class="hero-orbit" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="orbit-core">AI<span>人 × 技术</span></div>${data.modules.map((module, index) => `<i style="--i:${index};--c:${module.color}"></i>`).join("")}</div>
@@ -61,6 +66,22 @@ function renderApp(): void {
         <div class="section-heading"><p class="eyebrow">WHY THIS COURSE</p><h2 id="why-title">建立不会随工具过时的判断力</h2><p>从理解到应用，再到创造；每一步都把人、证据与责任放回流程中。</p></div>
         <div class="outcome-grid">${data.learningOutcomes.slice(0, 4).map((outcome, index) => `<article><span>0${index + 1}</span><h3>${["看懂背后的逻辑", "选择合适的路径", "设计可控的流程", "核验事实与证据"][index]}</h3><p>${outcome}</p></article>`).join("")}</div>
         <blockquote>本课程不培养“会按按钮的人”，而培养能提出好问题、判断证据、设计流程并承担责任的人。</blockquote>
+      </section>
+
+      <section class="section knowledge-section" id="knowledge" aria-labelledby="knowledge-title">
+        <div class="section-heading split"><div><p class="eyebrow">KNOWLEDGE MAP</p><h2 id="knowledge-title">先看懂学什么，再进入星图</h2></div><p>课程分为8个知识模块。每个模块先告诉你要解决的问题、涉及的核心概念，以及对应课时。</p></div>
+        <div class="knowledge-map">${data.modules.map((module) => {
+          const moduleLessons = lessonsForModule(module);
+          const moduleConcepts = conceptsForModule(module);
+          return `<article class="knowledge-module" style="--module:${module.color}">
+            <header><span>模块 ${pad(module.order)}</span><small>第${module.lessonRange[0]}–${module.lessonRange[1]}课</small></header>
+            <h3>${module.title}</h3>
+            <p>${module.description}</p>
+            <div class="module-concepts"><strong>你会学到</strong><div>${moduleConcepts.slice(0, 8).map((concept) => `<span>${concept}</span>`).join("")}</div></div>
+            <ol class="module-lessons">${moduleLessons.map((lesson) => `<li><button data-open-lesson="${lesson.id}"><span>${pad(lesson.number)}</span>${lesson.title}</button></li>`).join("")}</ol>
+            <button class="text-button module-library-link" data-filter-module="${module.id}">查看本模块${moduleLessons.length}课 →</button>
+          </article>`;
+        }).join("")}</div>
       </section>
 
       <section class="section galaxy-section" id="galaxy" aria-labelledby="galaxy-title">
@@ -84,7 +105,7 @@ function renderApp(): void {
       </section>
 
       <section class="section lessons-section" id="lessons" aria-labelledby="lessons-title">
-        <div class="section-heading split"><div><p class="eyebrow">COURSE LIBRARY</p><h2 id="lessons-title">32课时课程库</h2></div><p>搜索一个概念，或从模块、能力与递进层级切入。每课都包含问题、活动与可带走的学习产物。</p></div>
+        <div class="section-heading split"><div><p class="eyebrow">COURSE LIBRARY</p><h2 id="lessons-title">32课时课程库</h2></div><p>每张卡片直接列出核心知识点。点击“查看详情”，按“学什么—怎么理解—如何应用—怎样检查”的顺序阅读。</p></div>
         <div class="filter-panel">
           <label class="search-label"><span class="sr-only">搜索课时</span><input type="search" data-filter="query" placeholder="搜索主题、概念、问题或学习产物…"><i>⌕</i></label>
           <label>模块<select data-filter="module"><option value="">全部模块</option>${data.modules.map((module) => `<option value="${module.id}">0${module.order} · ${module.title}</option>`).join("")}</select></label>
@@ -164,7 +185,26 @@ function toggleComplete(id: string): void {
 
 function renderDialog(lesson: Lesson): void {
   const module = moduleFor(lesson); const dialog = document.querySelector<HTMLDialogElement>("[data-lesson-dialog]")!;
-  dialog.querySelector<HTMLElement>("[data-dialog-content]")!.innerHTML = `<div class="dialog-accent" style="--module:${module.color}"></div><button class="dialog-close" data-close-dialog aria-label="关闭课时详情">×</button><div class="dialog-meta"><span>LESSON ${pad(lesson.number)}</span><span>第${lesson.week}周 · 第${lesson.periodInWeek}课</span><span>${module.title}</span></div><h2 id="dialog-title" tabindex="-1">${lesson.title}</h2><p class="dialog-question">${lesson.drivingQuestion}</p><div class="concepts">${lesson.concepts.map((concept) => `<span>${concept}</span>`).join("")}</div><div class="dialog-grid"><article><span>课堂活动</span><p>${lesson.inClassActivity}</p></article><article><span>学习产物</span><p>${lesson.learningArtifact}</p></article></div><div class="dialog-badges"><span>${lesson.competencyDimensionLabel}</span><span>${lesson.progressionLevelLabel}</span><span>${lesson.durationMinutes}分钟</span></div><button class="button complete-wide" data-toggle-complete="${lesson.id}" aria-pressed="${progress.has(lesson.id)}">${progress.has(lesson.id) ? "✓ 已完成 · 点击取消" : "标记本课为已完成"}</button><nav class="dialog-nav" aria-label="课时切换"><button data-dialog-step="-1" ${lesson.number === 1 ? "disabled" : ""}>← 上一课</button><span>${pad(lesson.number)} / 32</span><button data-dialog-step="1" ${lesson.number === 32 ? "disabled" : ""}>下一课 →</button></nav>`;
+  dialog.querySelector<HTMLElement>("[data-dialog-content]")!.innerHTML = `
+    <div class="dialog-accent" style="--module:${module.color}"></div>
+    <div class="dialog-meta"><span>LESSON ${pad(lesson.number)}</span><span>第${lesson.week}周 · 第${lesson.periodInWeek}课</span><span>${module.title}</span></div>
+    <h2 id="dialog-title">${lesson.title}</h2>
+    <button class="dialog-close" data-close-dialog aria-label="关闭课时详情">×</button>
+    <section class="lesson-reading-block lesson-goal" aria-labelledby="lesson-goal-title">
+      <span class="reading-index">01</span><div><p class="reading-label" id="lesson-goal-title">这节课学什么</p><h3>${lesson.drivingQuestion}</h3><p>学完后，你应该能结合下面的核心概念回答这个问题，而不是只记住术语。</p></div>
+    </section>
+    <section class="lesson-reading-block" aria-labelledby="lesson-concepts-title">
+      <span class="reading-index">02</span><div><p class="reading-label" id="lesson-concepts-title">核心知识点</p><ol class="dialog-knowledge-list">${lesson.concepts.map((concept, index) => `<li><span>${pad(index + 1)}</span><div><strong>${concept}</strong><p>${conceptStudyPrompts[index] ?? conceptStudyPrompts[conceptStudyPrompts.length - 1]}</p></div></li>`).join("")}</ol></div>
+    </section>
+    <section class="lesson-reading-block" aria-labelledby="lesson-activity-title">
+      <span class="reading-index">03</span><div><p class="reading-label" id="lesson-activity-title">怎样把概念弄懂</p><div class="dialog-grid"><article><span>课堂案例与活动</span><p>${lesson.inClassActivity}</p></article><article><span>学完能够完成</span><p>${lesson.learningArtifact}</p></article></div></div>
+    </section>
+    <section class="lesson-reading-block lesson-check" aria-labelledby="lesson-check-title">
+      <span class="reading-index">04</span><div><p class="reading-label" id="lesson-check-title">即时自测</p><h3>${data.studyScaffolds.selfCheckInstruction}</h3><p>${lesson.drivingQuestion}</p><details><summary>展开检查要点 <span>＋</span></summary><p>回答中应能准确使用：${lesson.concepts.join("、")}。</p></details></div>
+    </section>
+    <div class="dialog-badges"><span>${lesson.competencyDimensionLabel}</span><span>${lesson.progressionLevelLabel}</span><span>${lesson.durationMinutes}分钟</span></div>
+    <button class="button complete-wide" data-toggle-complete="${lesson.id}" aria-pressed="${progress.has(lesson.id)}">${progress.has(lesson.id) ? "✓ 已完成 · 点击取消" : "完成自测后，标记本课为已完成"}</button>
+    <nav class="dialog-nav" aria-label="课时切换"><button data-dialog-step="-1" ${lesson.number === 1 ? "disabled" : ""}>← 上一课</button><span>${pad(lesson.number)} / 32</span><button data-dialog-step="1" ${lesson.number === 32 ? "disabled" : ""}>下一课 →</button></nav>`;
 }
 
 function openLesson(id: string, trigger?: HTMLElement): void {
@@ -173,7 +213,7 @@ function openLesson(id: string, trigger?: HTMLElement): void {
   lastLessonTrigger = trigger ?? null; state.activeLesson = lesson; renderDialog(lesson);
   history.replaceState(null, "", lessonHash(lesson));
   if (!dialog.open) dialog.showModal();
-  requestAnimationFrame(() => dialog.querySelector<HTMLElement>("#dialog-title")?.focus());
+  requestAnimationFrame(() => dialog.querySelector<HTMLButtonElement>("[data-close-dialog]")?.focus());
 }
 
 function closeDialog(clearHash = true): void {

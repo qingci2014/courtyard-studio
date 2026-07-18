@@ -11,11 +11,15 @@ export function validateCourse(data: CourseData): string[] {
   if (data.lessons.length !== 32) errors.push("课程必须恰好包含32课时");
   if (ids.size !== data.lessons.length) errors.push("课时ID必须唯一");
   if (data.modules.length !== 8) errors.push("课程必须包含8个模块");
+  const maxConcepts = Math.max(...data.lessons.map((lesson) => lesson.concepts.length));
+  if (data.studyScaffolds.conceptPrompts.length < maxConcepts) errors.push("知识点学习提示数量不足");
+  if (!data.studyScaffolds.selfCheckInstruction.trim()) errors.push("即时自测说明不能为空");
   data.lessons.forEach((lesson, index) => {
     if (lesson.number !== index + 1) errors.push(`课时编号不连续：${lesson.id}`);
     if (!moduleIds.has(lesson.moduleId)) errors.push(`无效模块：${lesson.id}`);
     if (!dimensions.has(lesson.competencyDimension)) errors.push(`无效能力维度：${lesson.id}`);
     if (!levels.has(lesson.progressionLevel)) errors.push(`无效递进层级：${lesson.id}`);
+    if (!lesson.concepts.length) errors.push(`课时缺少核心知识点：${lesson.id}`);
   });
   for (let week = 1; week <= 16; week += 1) {
     if (data.lessons.filter((lesson) => lesson.week === week).length !== 2) errors.push(`第${week}周不是2课时`);
