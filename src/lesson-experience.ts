@@ -115,7 +115,14 @@ function renderFaceUnlockCase(experience: LessonExperience, state: Investigation
     <section class="face-video-stage">
       <video ${motionAllowed ? "autoplay" : ""} muted loop playsinline preload="auto" src="${item.media!.video}" aria-label="清晨宿舍中，学生拿起手机准备解锁"></video>
       <div class="face-scene-tint"></div>
-      <div class="phone-ar" aria-hidden="true"><i></i><b></b><span data-phone-confidence>${confidence}%</span></div>
+      <div class="phone-ar" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path class="phone-ar-frame" d="M32 1 Q34 0 38 1 L96 7 Q100 8 98 16 L80 91 Q78 100 70 99 L7 93 Q0 92 3 83 L28 9 Q29 2 32 1 Z"></path>
+          <path class="phone-ar-face" d="M48 13 C65 14 77 31 75 53 C73 74 59 86 43 83 C27 80 20 62 24 41 C27 23 37 12 48 13 Z"></path>
+          <path class="phone-ar-axis" d="M20 45 L83 50"></path>
+        </svg>
+        <i></i><b></b><span data-phone-confidence>${confidence}%</span>
+      </div>
       <div class="scene-case-label"><span>${item.time}</span><small>现场 01 / 06 · ${item.scene}</small></div>
       <div class="face-game-copy">
         <p class="investigation-eyebrow">LIVE TRACE · FACE UNLOCK</p>
