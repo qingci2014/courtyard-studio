@@ -142,31 +142,23 @@ function renderFaceUnlockCase(experience: LessonExperience, state: Investigation
 
 function renderIntro(experience: LessonExperience, state: InvestigationState): string {
   const hasProgress = Object.values(state.answers).some((answer) => answer.evidenceSeen);
-  const casePreviews = experience.cases.map((item, index) => `<li><span>${String(index + 1).padStart(2, "0")}</span><div><small>${item.time} · ${item.scene}</small><strong>${escapeHtml(item.title)}</strong></div></li>`).join("");
   return `<main class="investigation-intro" aria-labelledby="investigation-title">
-    <section class="investigation-briefing">
+    <section class="intro-act intro-act-one">
       <p class="investigation-eyebrow">${experience.intro.eyebrow}</p>
       <h1 id="investigation-title" data-view-title tabindex="-1">${experience.intro.title}</h1>
-      <p class="investigation-question">${experience.intro.question}</p>
-      <p>${experience.intro.briefing}</p>
-      <section class="case-preview" aria-labelledby="case-preview-title">
-        <div><strong id="case-preview-title">先浏览今天的6个现场</strong><small>只看现场，不透露答案</small></div>
-        <ol>${casePreviews}</ol>
-      </section>
-      <div class="estimate-control">
-        <label for="ai-estimate">${experience.intro.estimateLabel}</label>
-        <div><input id="ai-estimate" data-estimate type="range" min="0" max="${experience.cases.length}" value="${state.estimate}"><output data-estimate-output>${state.estimate} / ${experience.cases.length}</output></div>
-      </div>
-      <small>约${experience.durationMinutes}分钟 · 全程本地运行 · 可以随时退出继续</small>
     </section>
-    <aside class="investigation-phone">
-      <div class="phone-speaker" aria-hidden="true"></div><span aria-hidden="true">07:08</span>
-      <div class="phone-alert"><i></i><div><small>调查局 · 刚刚</small><strong>你的数字生活留下了6处可疑痕迹</strong><p>其中有些是AI，有些只是在自动运行。</p></div></div>
-      <button class="phone-scan" data-begin-investigation>
-        <b aria-hidden="true"></b>
-        <span><strong>${hasProgress ? "继续上次调查" : "接受案件，开始调查"}</strong><small>点击进入现场</small><i aria-hidden="true">→</i></span>
-      </button>
-    </aside>
+    <section class="intro-act intro-act-two" aria-hidden="true"><h2>${experience.intro.briefing}</h2></section>
+    <section class="intro-act intro-act-phone">
+      <aside class="investigation-phone">
+        <div class="phone-speaker" aria-hidden="true"></div><span aria-hidden="true">07:08</span>
+        <div class="phone-alert"><i></i><div><small>调查局 · 刚刚</small><strong>你的数字生活留下了${experience.cases.length}处可疑痕迹</strong><p>其中有些是AI，有些只是在自动运行。</p></div></div>
+        <button class="phone-scan" data-begin-investigation>
+          <b aria-hidden="true"></b>
+          <span><strong>${hasProgress ? "继续上次调查" : "接受案件，开始调查"}</strong><small>点击进入现场</small><i aria-hidden="true">→</i></span>
+        </button>
+      </aside>
+      <small class="intro-duration">约${experience.durationMinutes}分钟 · 全程本地运行</small>
+    </section>
   </main>`;
 }
 

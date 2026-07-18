@@ -10,7 +10,17 @@ body.experience-open { overflow: hidden; }
 .investigation-header > div { justify-self: end; display: flex; align-items: center; gap: 1rem; color: #7f8ba6; font-size: .68rem; }
 .investigation-header > div button { min-height: 40px; color: #7f8ba6; }
 .investigation-eyebrow, .workbench-label { color: var(--trace); font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
-.investigation-intro { min-height: calc(100svh - 68px); max-width: 1240px; margin: auto; display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(2rem, 8vw, 7rem); align-items: center; padding: clamp(3rem, 8vw, 7rem) clamp(1rem, 4vw, 3.5rem); }
+.investigation-intro { position: relative; height: calc(100svh - 68px); min-height: 0; overflow: hidden; background: radial-gradient(circle at 50% 52%, rgba(43,81,128,.13), transparent 38%); }
+.intro-act { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; padding: clamp(1.5rem,5vw,4rem); text-align: center; }
+.intro-act-one { animation: intro-copy 3s ease-in-out both; }
+.intro-act-one .investigation-eyebrow { margin: 0 0 1rem; }
+.intro-act-one h1 { max-width: 1100px; margin: 0; font-size: clamp(3.2rem,7vw,7.4rem); line-height: .96; letter-spacing: -.055em; text-wrap: balance; }
+.intro-act-two { opacity: 0; animation: intro-copy 3s 3s ease-in-out both; }
+.intro-act-two h2 { max-width: 960px; margin: 0; color: #eff5ff; font-size: clamp(2rem,4.2vw,4.6rem); font-weight: 600; line-height: 1.25; letter-spacing: -.035em; text-wrap: balance; }
+.intro-act-phone { visibility: hidden; opacity: 0; animation: intro-phone .9s 6s cubic-bezier(.2,.8,.2,1) both; }
+.intro-duration { position: absolute; bottom: 1rem; color: #5f6e89; font-size: .62rem; letter-spacing: .08em; }
+@keyframes intro-copy { 0% { opacity: 0; transform: translateY(22px) scale(.985); filter: blur(8px); } 14%,78% { opacity: 1; transform: none; filter: none; } 100% { opacity: 0; transform: translateY(-18px) scale(1.015); filter: blur(6px); } }
+@keyframes intro-phone { 0% { visibility: hidden; opacity: 0; transform: translateY(28px) scale(.92); filter: blur(10px); } 1% { visibility: visible; } 100% { visibility: visible; opacity: 1; transform: none; filter: none; } }
 .investigation-briefing h1, .case-scene h1, .report-heading h1 { max-width: 860px; margin: .75rem 0 1.25rem; font-size: clamp(2.8rem, 6vw, 6rem); line-height: .98; letter-spacing: -.055em; }
 .investigation-briefing > p:not(.investigation-eyebrow):not(.investigation-question) { max-width: 650px; color: #98a4bc; line-height: 1.8; }
 .investigation-question { max-width: 650px; color: #eaf0ff; font-size: clamp(1.05rem, 2vw, 1.35rem); }
@@ -31,23 +41,23 @@ body.experience-open { overflow: hidden; }
 .investigation-primary:disabled { opacity: .38; cursor: not-allowed; }
 .investigation-secondary { background: transparent; color: #dbe5f7; border-color: rgba(225,235,255,.2); }
 .investigation-briefing > small { display: block; margin-top: 1rem; color: #68758f; font-size: .68rem; }
-.investigation-phone { position: relative; width: min(360px, 76vw); aspect-ratio: .55; justify-self: center; overflow: hidden; padding: 2.5rem 1rem 1rem; border: 1px solid rgba(225,235,255,.2); border-radius: 48px; background: linear-gradient(160deg, #10182d, #071021 60%); box-shadow: 0 40px 100px rgba(0,0,0,.55), inset 0 0 0 7px #030611; }
+.investigation-phone { position: relative; width: min(330px,76vw,calc((100svh - 120px) * .55)); aspect-ratio: .55; display: flex; flex-direction: column; align-items: stretch; overflow: hidden; padding: 2.5rem 1rem 1.2rem; border: 1px solid rgba(225,235,255,.2); border-radius: 48px; background: linear-gradient(160deg, #10182d, #071021 60%); box-shadow: 0 40px 100px rgba(0,0,0,.55), inset 0 0 0 7px #030611; }
 .phone-speaker { position: absolute; top: 13px; left: 50%; width: 30%; height: 24px; transform: translateX(-50%); border-radius: 20px; background: #030611; }
-.investigation-phone > span { display: block; margin: 1.2rem 0 3rem; text-align: center; font-size: 3.3rem; font-weight: 200; }
+.investigation-phone > span { display: block; margin: 1rem 0 1.7rem; text-align: center; font-size: clamp(2.6rem,5svh,3.3rem); font-weight: 200; }
 .phone-alert { display: grid; grid-template-columns: 12px 1fr; gap: .7rem; padding: 1rem; border: 1px solid rgba(225,235,255,.13); border-radius: 17px; background: rgba(255,255,255,.055); }
 .phone-alert i { width: 10px; height: 10px; margin-top: 4px; border-radius: 50%; background: var(--trace); box-shadow: 0 0 16px var(--trace); }
 .phone-alert small { display: block; color: #7f8ba6; font-size: .62rem; }
 .phone-alert strong { display: block; margin-top: .35rem; font-size: .88rem; line-height: 1.45; }
 .phone-alert p { margin: .35rem 0 0; color: #929eb6; font-size: .68rem; }
-.phone-scan { position: absolute; left: 50%; bottom: 9rem; width: 260px; height: 260px; display: grid; place-items: center; overflow: visible; transform: translateX(-50%); border: 0; border-radius: 50%; background: radial-gradient(circle, rgba(100,230,255,.16), rgba(100,230,255,.04) 48%, transparent 70%); color: var(--trace); cursor: pointer; isolation: isolate; transition: transform .25s, filter .25s; }
+.phone-scan { position: relative; flex: 0 0 auto; width: min(230px,100%); aspect-ratio: 1; display: grid; place-items: center; overflow: visible; margin: 2.2rem auto 0; border: 0; border-radius: 50%; background: radial-gradient(circle, rgba(100,230,255,.16), rgba(100,230,255,.04) 48%, transparent 70%); color: var(--trace); cursor: pointer; isolation: isolate; transition: transform .25s, filter .25s; }
 .phone-scan::before { content: ""; position: absolute; inset: 18px; border: 1px solid rgba(100,230,255,.16); border-radius: 50%; animation: case-ring 1.8s ease-out infinite; }
 .phone-scan::after { content: ""; position: absolute; z-index: 1; left: 21%; width: 58%; height: 1px; background: linear-gradient(90deg, transparent, rgba(100,230,255,.9), transparent); box-shadow: 0 0 12px rgba(100,230,255,.7); animation: case-sweep 2.2s ease-in-out infinite; }
-.phone-scan b { position: absolute; inset: 54px; border: 1px solid rgba(100,230,255,.58); border-radius: 50%; box-shadow: 0 0 0 22px rgba(100,230,255,.045), 0 0 0 44px rgba(100,230,255,.02), 0 0 28px rgba(100,230,255,.14); animation: case-core 1.8s ease-in-out infinite; }
+.phone-scan b { position: absolute; inset: 46px; border: 1px solid rgba(100,230,255,.58); border-radius: 50%; box-shadow: 0 0 0 20px rgba(100,230,255,.045), 0 0 0 40px rgba(100,230,255,.02), 0 0 28px rgba(100,230,255,.14); animation: case-core 1.8s ease-in-out infinite; }
 .phone-scan span { position: relative; z-index: 2; width: 176px; display: grid; justify-items: center; text-align: center; }
 .phone-scan span strong { max-width: 160px; color: #eefdff; font-size: .86rem; line-height: 1.45; letter-spacing: .03em; }
 .phone-scan span small { margin-top: .35rem; color: #80a9b4; font-size: .58rem; letter-spacing: .12em; }
 .phone-scan span i { width: 28px; height: 28px; display: grid; place-items: center; margin-top: .65rem; border: 1px solid rgba(100,230,255,.55); border-radius: 50%; font-style: normal; animation: case-arrow 1.15s ease-in-out infinite; }
-.phone-scan:hover { transform: translateX(-50%) scale(1.04); filter: brightness(1.18); }.phone-scan:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+.phone-scan:hover { transform: scale(1.04); filter: brightness(1.18); }.phone-scan:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
 @keyframes case-ring { 0% { transform: scale(.76); opacity: 0; } 35% { opacity: .8; } 100% { transform: scale(1.08); opacity: 0; } }
 @keyframes case-core { 50% { box-shadow: 0 0 0 28px rgba(100,230,255,.06), 0 0 0 52px rgba(100,230,255,.025), 0 0 40px rgba(100,230,255,.24); } }
 @keyframes case-sweep { 0%,100% { top: 31%; opacity: .2; } 50% { top: 67%; opacity: 1; } }
@@ -160,14 +170,14 @@ body.experience-open { overflow: hidden; }
 .report-actions { display: flex; justify-content: flex-end; gap: .8rem; margin-top: 1.5rem; }
 
 @media (max-width: 900px) {
-  .investigation-intro { grid-template-columns: 1fr; align-items: start; }.investigation-phone { width: 100%; max-width: 650px; min-height: 320px; aspect-ratio: auto; justify-self: start; border-radius: 32px; }.phone-speaker, .investigation-phone > span, .phone-alert { display: none; }.phone-scan { bottom: 1.9rem; }
+  .investigation-intro { height: calc(100svh - 68px); }.investigation-phone { justify-self: center; }
   .case-layout { grid-template-columns: 1fr; }.case-scene { position: relative; top: auto; height: auto; min-height: 540px; border-right: 0; border-bottom: 1px solid rgba(225,235,255,.12); }.case-workbench { padding-top: 3rem; }
   .footprint-map { min-height: 580px; }.footprint-node { width: 190px; }
 }
 
 @media (max-width: 650px) {
   .investigation-header { grid-template-columns: 1fr auto; height: 62px; }.investigation-header > a { display: none; }.investigation-header > div { grid-column: 2; }.investigation-header > div > span { display: none; }
-  .investigation-intro { min-height: calc(100svh - 62px); padding-top: 2.5rem; }.investigation-briefing h1, .report-heading h1 { font-size: clamp(2.6rem, 14vw, 4.3rem); }.case-preview ol { grid-template-columns: repeat(2,minmax(0,1fr)); }.case-preview > div { align-items: end; }.case-preview > div small { text-align: right; }
+  .investigation-intro { height: calc(100svh - 62px); }.intro-act-one h1 { font-size: clamp(2.8rem,14vw,4.8rem); }.intro-act-two h2 { font-size: clamp(1.7rem,8vw,2.8rem); }.investigation-briefing h1, .report-heading h1 { font-size: clamp(2.6rem, 14vw, 4.3rem); }
   .case-progress { top: 62px; }.case-layout { min-height: calc(100svh - 65px); }.case-scene { min-height: 500px; padding: 2rem 1rem; }.case-workbench { padding: 2.5rem 1rem 4rem; }
   .investigation-choices { grid-template-columns: 1fr; }.investigation-choice { min-height: 70px; grid-template-columns: 42px 1fr; justify-items: start; text-align: left; }
   .mechanism-flow article { grid-template-columns: 82px 1fr; }.evidence-heading { display: grid; }.case-workbench .investigation-primary { width: 100%; }
@@ -180,5 +190,6 @@ body.experience-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .case-progress span { transition: none; }
   .face-video-stage { transition: none; }
+  .intro-act-one, .intro-act-two { display: none; animation: none; }.intro-act-phone { visibility: visible; opacity: 1; animation: none; }
   .phone-ar i, .scan-trigger > span, .phone-scan::before, .phone-scan::after, .phone-scan b, .phone-scan span i { animation: none; }
 }
