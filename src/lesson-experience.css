@@ -69,7 +69,7 @@ body.experience-open { overflow: hidden; }
 .phone-ar-axis { stroke-width: 1; stroke-dasharray: 3 2; opacity: .5; }
 .phone-ar i { position: absolute; z-index: 1; inset: 0; background: linear-gradient(180deg, transparent 0 45%, rgba(100,230,255,.7) 49%, rgba(100,230,255,.08) 52%, transparent 56%); animation: phone-scan 2.2s ease-in-out infinite; }
 .phone-ar b { position: absolute; z-index: 3; left: 14%; top: 34%; width: 72%; height: 23%; background: rgba(4,7,13,.86); opacity: 0; transform: rotate(4deg); transition: opacity .3s; }
-.phone-ar span { position: absolute; z-index: 4; right: 20%; bottom: 5%; font-size: clamp(.42rem,.7vw,.65rem); font-weight: 700; text-shadow: 0 1px 4px #000; }
+.phone-ar span { position: absolute; z-index: 4; left: 49%; top: 49%; transform: translate(-50%,-50%); padding: .22em .48em; border: 1px solid rgba(100,230,255,.48); border-radius: 999px; background: rgba(3,10,19,.68); color: #eaffff; font-size: clamp(.8rem,1.4vw,1.35rem); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 0 10px rgba(100,230,255,.95); box-shadow: 0 0 18px rgba(100,230,255,.2); backdrop-filter: blur(4px); }
 .face-unlock-game[data-face-mode="angle"] .phone-ar-face { transform: translateX(7px) rotate(13deg) scaleX(.7); }
 .face-unlock-game[data-face-mode="cover"] .phone-ar b { opacity: .92; }
 @keyframes phone-scan { 0%,100% { transform: translateY(-42%); opacity: .35; } 50% { transform: translateY(42%); opacity: 1; } }
