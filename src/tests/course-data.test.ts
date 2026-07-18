@@ -30,4 +30,12 @@ describe("课程唯一数据源", () => {
     expect(data.studyScaffolds.conceptPrompts.length).toBeGreaterThanOrEqual(Math.max(...data.lessons.map((lesson) => lesson.concepts.length)));
     expect(data.studyScaffolds.selfCheckInstruction.length).toBeGreaterThan(10);
   });
+
+  it("第一课互动调查的案件、证据与结论均来自JSON", () => {
+    const experience = data.lessonExperiences.find((item) => item.lessonId === "lesson-01");
+    expect(experience).toBeDefined();
+    expect(experience?.cases).toHaveLength(6);
+    expect(new Set(experience?.cases.map((item) => item.verdict))).toEqual(new Set(["ai", "automation", "uncertain"]));
+    expect(experience?.cases.every((item) => item.clue && item.explanation && item.mechanism.humanImpact)).toBe(true);
+  });
 });

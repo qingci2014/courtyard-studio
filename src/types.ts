@@ -30,6 +30,20 @@ export interface Lesson {
 export interface Assessment { name: string; weight: number; description: string }
 export interface RubricItem { criterion: string; weight: number }
 export interface FeaturedLab { id: string; title: string; lessonId: string; description: string; implementation: string }
+export type InvestigationVerdict = "ai" | "automation" | "uncertain";
+export interface InvestigationCase {
+  id: string; time: string; scene: string; title: string; description: string; clue: string;
+  verdict: InvestigationVerdict; concept: string; explanation: string;
+  mechanism: { task: string; input: string; operation: string; output: string; humanImpact: string };
+}
+export interface LessonExperience {
+  lessonId: string; slug: string; title: string; subtitle: string; durationMinutes: number;
+  intro: { eyebrow: string; title: string; question: string; briefing: string; estimateLabel: string };
+  labels: Record<InvestigationVerdict, string>;
+  confidenceLevels: number[];
+  cases: InvestigationCase[];
+  report: { title: string; reflectionPrompt: string; reflectionPlaceholder: string; closingQuestion: string };
+}
 export interface CourseData {
   meta: CourseMeta;
   studyScaffolds: { conceptPrompts: string[]; selfCheckInstruction: string };
@@ -40,6 +54,7 @@ export interface CourseData {
   assessment: Assessment[];
   finalProjectRubric: RubricItem[];
   featuredLabs: FeaturedLab[];
+  lessonExperiences: LessonExperience[];
 }
 
 export interface Filters { query: string; module: string; competency: string; level: string }

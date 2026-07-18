@@ -174,6 +174,9 @@ button, select, input, textarea { border-radius: 10px; }
 .lesson-detail { display: -webkit-box; overflow: hidden; margin-bottom: .6rem; font-size: .78rem; line-height: 1.6; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .lesson-detail b { margin-right: .55rem; color: var(--text-3); }
 .lesson-detail.outcome { padding-left: .75rem; border-left: 1px solid var(--module); }
+.lesson-experience-teaser { display: grid; grid-template-columns: 1fr auto; gap: .2rem .7rem; margin: .45rem 0 1rem; padding: .8rem; text-align: left; border: 1px solid color-mix(in srgb, var(--module) 42%, var(--line)); border-radius: 12px; background: color-mix(in srgb, var(--module) 7%, transparent); color: var(--text-1); cursor: pointer; }
+.lesson-experience-teaser span { grid-column: 1 / -1; color: var(--module); font-size: .62rem; letter-spacing: .09em; text-transform: uppercase; }
+.lesson-experience-teaser strong { font-size: .82rem; }.lesson-experience-teaser i { color: var(--module); font-size: .7rem; font-style: normal; }
 .lesson-footer { display: grid; gap: .7rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--text-3); font-size: .7rem; }
 .lesson-footer > div { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
 .complete-button { min-height: 38px; padding: .45rem .7rem; border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--text-2); cursor: pointer; }
@@ -295,6 +298,11 @@ input[type="range"] { width: 100%; accent-color: var(--focus); }
 .lesson-check summary span { color: var(--module); font-size: 1.1rem; }
 .lesson-check details[open] summary span { transform: rotate(45deg); }
 .lesson-check details p { margin: 0; padding: 0 .85rem .85rem; color: var(--text-2); font-size: .8rem; }
+.dialog-experience { display: grid; grid-template-columns: 110px 1fr auto; gap: 1rem; align-items: center; margin-top: 1.2rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--module) 40%, var(--line)); border-radius: 16px; background: color-mix(in srgb, var(--module) 6%, rgba(5,9,19,.5)); }
+.dialog-experience > span { color: var(--module); font-size: .62rem; letter-spacing: .12em; }.dialog-experience h3 { margin: 0 0 .3rem; color: var(--text-1); }.dialog-experience p { margin: 0; font-size: .75rem; }
+.experience-loading { min-height: 100svh; display: grid; place-content: center; justify-items: center; gap: 1rem; background: #050814; color: #cbd5e8; }
+.experience-loading span { width: 38px; height: 38px; border: 1px solid rgba(100,230,255,.2); border-top-color: #64e6ff; border-radius: 50%; animation: loading-spin .8s linear infinite; }
+@keyframes loading-spin { to { transform: rotate(360deg); } }
 .dialog-badges { display: flex; flex-wrap: wrap; gap: .5rem; }
 .complete-wide { width: 100%; margin-top: 1.3rem; }
 .dialog-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
@@ -371,6 +379,7 @@ input[type="range"] { width: 100%; accent-color: var(--focus); }
   .dialog-grid { grid-template-columns: 1fr; }
   .lesson-reading-block { grid-template-columns: 34px minmax(0, 1fr); gap: .7rem; }
   .lesson-goal { padding: 1rem; }
+  .dialog-experience { grid-template-columns: 1fr; }.dialog-experience > .button { width: 100%; }
 }
 
 @media (max-width: 420px) {

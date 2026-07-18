@@ -9,6 +9,7 @@ const validationErrors = validateCourse(data);
 if (validationErrors.length) throw new Error(`课程数据校验失败：${validationErrors.join("；")}`);
 
 const moduleById = new Map(data.modules.map((module) => [module.id, module]));
+const experienceByLesson = new Map(data.lessonExperiences.map((experience) => [experience.lessonId, experience]));
 const progress = loadProgress(data.lessons);
 const state: { filters: Filters; view: "grid" | "list"; activeLesson: Lesson | null } = {
   filters: { query: "", module: "", competency: "", level: "" },
@@ -16,6 +17,8 @@ const state: { filters: Filters; view: "grid" | "list"; activeLesson: Lesson | n
   activeLesson: null
 };
 let lastLessonTrigger: HTMLElement | null = null;
+let activeExperienceLessonId: string | null = null;
+let experienceLoading = false;
 let galaxyController: { setCompleted: (ids: Set<string>) => void; setVisibleLessons: (ids: Set<string>) => void } | null = null;
 
 const pad = (value: number) => String(value).padStart(2, "0");
@@ -27,12 +30,13 @@ const conceptStudyPrompts = data.studyScaffolds.conceptPrompts;
 
 function lessonButton(lesson: Lesson, compact = false): string {
   const module = moduleFor(lesson);
+  const experience = experienceByLesson.get(lesson.id);
   return `<article class="lesson-card${compact ? " compact" : ""}" data-lesson-card="${lesson.id}" style="--module:${module.color}">
     <div class="lesson-meta"><span>${pad(lesson.number)}</span><span>第${lesson.week}周 · ${lesson.periodInWeek}</span><span>${module.shortTitle}</span></div>
     <h3>${lesson.title}</h3>
     <p class="lesson-kicker">本课要回答</p>
     <p class="driving-question">${lesson.drivingQuestion}</p>
-    ${compact ? "" : `<div class="lesson-knowledge"><strong>核心知识点</strong><ol>${lesson.concepts.map((concept, index) => `<li><span>${index + 1}</span>${concept}</li>`).join("")}</ol></div><p class="lesson-detail outcome"><b>学完能完成</b>${lesson.learningArtifact}</p>`}
+    ${compact ? "" : `<div class="lesson-knowledge"><strong>核心知识点</strong><ol>${lesson.concepts.map((concept, index) => `<li><span>${index + 1}</span>${concept}</li>`).join("")}</ol></div><p class="lesson-detail outcome"><b>学完能完成</b>${lesson.learningArtifact}</p>${experience ? `<button class="lesson-experience-teaser" data-start-experience="${lesson.id}"><span>互动案件 · ${experience.durationMinutes}分钟</span><strong>${experience.title}</strong><i>进入调查 →</i></button>` : ""}`}
     <div class="lesson-footer"><span>${lesson.competencyDimensionLabel} · ${lesson.progressionLevelLabel}</span><div><button class="text-button" data-open-lesson="${lesson.id}">查看详情</button><button class="complete-button" data-toggle-complete="${lesson.id}" aria-pressed="${progress.has(lesson.id)}">${progress.has(lesson.id) ? "✓ 已完成" : "标记完成"}</button></div></div>
   </article>`;
 }
@@ -145,6 +149,7 @@ function renderApp(): void {
     </main>
     <footer class="site-footer"><div><a class="brand" href="#overview"><span>AI /</span> GENERAL EDUCATION</a><p>${data.meta.courseTitle}</p></div><div><strong>${data.meta.totalLessons}课时 / ${data.meta.semesterWeeks}周 / 面向大一</strong><p>课程内容由JSON统一维护 · 无外部追踪器 · v1.0</p></div><a href="#overview">返回顶部 ↑</a></footer>
 
+    <div class="experience-root" data-experience-root role="dialog" aria-modal="true" aria-label="AI痕迹调查局" hidden></div>
     <dialog class="lesson-dialog" data-lesson-dialog aria-labelledby="dialog-title"><div data-dialog-content></div></dialog>
     <div class="toast" data-toast role="status" aria-live="polite"></div>`;
 }
@@ -183,8 +188,22 @@ function toggleComplete(id: string): void {
   if (state.activeLesson?.id === id) renderDialog(lesson);
 }
 
+function markComplete(id: string): void {
+  if (!progress.has(id)) {
+    progress.add(id); saveProgress(progress); updateProgressUI(`第${data.lessons.find((lesson) => lesson.id === id)?.number ?? ""}课互动任务已完成`);
+  }
+}
+
+function setCourseInert(inert: boolean): void {
+  document.querySelectorAll<HTMLElement>(".skip-link, .site-header, #main-content, .site-footer, [data-toast]").forEach((element) => {
+    element.inert = inert;
+    if (inert) element.setAttribute("aria-hidden", "true"); else element.removeAttribute("aria-hidden");
+  });
+}
+
 function renderDialog(lesson: Lesson): void {
   const module = moduleFor(lesson); const dialog = document.querySelector<HTMLDialogElement>("[data-lesson-dialog]")!;
+  const experience = experienceByLesson.get(lesson.id);
   dialog.querySelector<HTMLElement>("[data-dialog-content]")!.innerHTML = `
     <div class="dialog-accent" style="--module:${module.color}"></div>
     <div class="dialog-meta"><span>LESSON ${pad(lesson.number)}</span><span>第${lesson.week}周 · 第${lesson.periodInWeek}课</span><span>${module.title}</span></div>
@@ -202,9 +221,45 @@ function renderDialog(lesson: Lesson): void {
     <section class="lesson-reading-block lesson-check" aria-labelledby="lesson-check-title">
       <span class="reading-index">04</span><div><p class="reading-label" id="lesson-check-title">即时自测</p><h3>${data.studyScaffolds.selfCheckInstruction}</h3><p>${lesson.drivingQuestion}</p><details><summary>展开检查要点 <span>＋</span></summary><p>回答中应能准确使用：${lesson.concepts.join("、")}。</p></details></div>
     </section>
+    ${experience ? `<section class="dialog-experience" style="--module:${module.color}"><span>INTERACTIVE CASE</span><div><h3>${experience.title}</h3><p>${experience.subtitle}。先判断、找证据，再决定是否改判。</p></div><button class="button" data-start-experience="${lesson.id}">开始调查 · ${experience.durationMinutes}分钟 →</button></section>` : ""}
     <div class="dialog-badges"><span>${lesson.competencyDimensionLabel}</span><span>${lesson.progressionLevelLabel}</span><span>${lesson.durationMinutes}分钟</span></div>
     <button class="button complete-wide" data-toggle-complete="${lesson.id}" aria-pressed="${progress.has(lesson.id)}">${progress.has(lesson.id) ? "✓ 已完成 · 点击取消" : "完成自测后，标记本课为已完成"}</button>
     <nav class="dialog-nav" aria-label="课时切换"><button data-dialog-step="-1" ${lesson.number === 1 ? "disabled" : ""}>← 上一课</button><span>${pad(lesson.number)} / 32</span><button data-dialog-step="1" ${lesson.number === 32 ? "disabled" : ""}>下一课 →</button></nav>`;
+}
+
+async function startLessonExperience(lessonId: string): Promise<void> {
+  const experience = experienceByLesson.get(lessonId);
+  if (!experience || experienceLoading) return;
+  experienceLoading = true; activeExperienceLessonId = lessonId;
+  const root = document.querySelector<HTMLElement>("[data-experience-root]")!;
+  const dialog = document.querySelector<HTMLDialogElement>("[data-lesson-dialog]");
+  if (dialog?.open) dialog.close();
+  state.activeLesson = null; root.hidden = false; document.body.classList.add("experience-open");
+  setCourseInert(true);
+  history.replaceState(null, "", `#${lessonId}/investigation`);
+  root.innerHTML = `<div class="experience-loading" role="status" tabindex="-1"><span></span><p>正在打开调查档案…</p></div>`;
+  root.querySelector<HTMLElement>(".experience-loading")?.focus();
+  try {
+    const { initLessonExperience } = await import("./lesson-experience");
+    initLessonExperience({
+      root, experience,
+      onClose: () => closeLessonExperience(),
+      onComplete: () => markComplete(lessonId)
+    });
+  } catch (error) {
+    console.error("第一课互动任务加载失败。", error);
+    root.innerHTML = `<div class="experience-loading"><p>调查档案暂时无法打开。</p><button class="button" data-experience-load-exit>返回课程</button></div>`;
+  } finally {
+    experienceLoading = false;
+  }
+}
+
+function closeLessonExperience(): void {
+  const root = document.querySelector<HTMLElement>("[data-experience-root]")!;
+  const lessonId = activeExperienceLessonId;
+  root.hidden = true; root.innerHTML = ""; document.body.classList.remove("experience-open"); setCourseInert(false); activeExperienceLessonId = null;
+  if (lessonId) openLesson(lessonId);
+  else history.replaceState(null, "", `${location.pathname}${location.search}`);
 }
 
 function openLesson(id: string, trigger?: HTMLElement): void {
@@ -246,11 +301,15 @@ function bindEvents(): void {
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     setMenu(false);
+    if (document.body.classList.contains("experience-open")) { closeLessonExperience(); return; }
     if (document.querySelector<HTMLDialogElement>("[data-lesson-dialog]")?.open) closeDialog();
   });
 
   document.addEventListener("click", (event) => {
     const target = event.target as HTMLElement;
+    const experienceStart = target.closest<HTMLElement>("[data-start-experience]");
+    if (experienceStart) { void startLessonExperience(experienceStart.dataset.startExperience!); return; }
+    if (target.closest("[data-experience-load-exit]")) { closeLessonExperience(); return; }
     const open = target.closest<HTMLElement>("[data-open-lesson]");
     if (open) { event.preventDefault(); openLesson(open.dataset.openLesson!, open); return; }
     const complete = target.closest<HTMLButtonElement>("[data-toggle-complete]"); if (complete) { toggleComplete(complete.dataset.toggleComplete!); return; }
@@ -285,6 +344,8 @@ function bindEvents(): void {
 }
 
 function restoreHash(): void {
+  const experienceMatch = location.hash.match(/^#(lesson-\d{2})\/investigation$/);
+  if (experienceMatch) { void startLessonExperience(experienceMatch[1]!); return; }
   const match = location.hash.match(/^#lesson-(\d{2})$/);
   if (match) openLesson(`lesson-${match[1]}`);
 }

@@ -21,6 +21,19 @@ export function validateCourse(data: CourseData): string[] {
     if (!levels.has(lesson.progressionLevel)) errors.push(`无效递进层级：${lesson.id}`);
     if (!lesson.concepts.length) errors.push(`课时缺少核心知识点：${lesson.id}`);
   });
+  const experienceLessonIds = new Set<string>();
+  data.lessonExperiences.forEach((experience) => {
+    if (!ids.has(experience.lessonId)) errors.push(`互动子页面关联了无效课时：${experience.lessonId}`);
+    if (experienceLessonIds.has(experience.lessonId)) errors.push(`课时存在重复互动子页面：${experience.lessonId}`);
+    experienceLessonIds.add(experience.lessonId);
+    if (experience.cases.length < 3) errors.push(`互动子页面案件数量不足：${experience.lessonId}`);
+    const caseIds = new Set(experience.cases.map((item) => item.id));
+    if (caseIds.size !== experience.cases.length) errors.push(`互动子页面案件ID重复：${experience.lessonId}`);
+    experience.cases.forEach((item) => {
+      if (!experience.labels[item.verdict]) errors.push(`互动案件结论无对应标签：${item.id}`);
+      if (!item.clue.trim() || !item.explanation.trim()) errors.push(`互动案件证据或解释为空：${item.id}`);
+    });
+  });
   for (let week = 1; week <= 16; week += 1) {
     if (data.lessons.filter((lesson) => lesson.week === week).length !== 2) errors.push(`第${week}周不是2课时`);
   }
