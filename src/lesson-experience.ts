@@ -141,20 +141,22 @@ function renderFaceUnlockCase(experience: LessonExperience, state: Investigation
 }
 
 function renderIntro(experience: LessonExperience, state: InvestigationState): string {
-  const hasProgress = Object.values(state.answers).some((answer) => answer.evidenceSeen);
   return `<main class="investigation-intro" aria-labelledby="investigation-title">
-    <section class="intro-act intro-act-one">
-      <p class="investigation-eyebrow">${experience.intro.eyebrow}</p>
-      <h1 id="investigation-title" data-view-title tabindex="-1">${experience.intro.title}</h1>
+    <section class="intro-act intro-act-one is-active">
+      <div><p class="investigation-eyebrow">${experience.intro.eyebrow}</p><h1 id="investigation-title" data-view-title tabindex="-1">${experience.intro.title}</h1></div>
+      <button class="phone-scan intro-next" data-intro-next><b aria-hidden="true"></b><span><strong>下一步</strong></span></button>
     </section>
-    <section class="intro-act intro-act-two" aria-hidden="true"><h2>${experience.intro.briefing}</h2></section>
-    <section class="intro-act intro-act-phone">
+    <section class="intro-act intro-act-two" aria-hidden="true">
+      <h2>${experience.intro.briefing}</h2>
+      <button class="phone-scan intro-next" data-intro-next><b aria-hidden="true"></b><span><strong>下一步</strong></span></button>
+    </section>
+    <section class="intro-act intro-act-phone" aria-hidden="true">
       <aside class="investigation-phone">
         <div class="phone-speaker" aria-hidden="true"></div><span aria-hidden="true">07:08</span>
         <div class="phone-alert"><i></i><div><small>调查局 · 刚刚</small><strong>你的数字生活留下了${experience.cases.length}处可疑痕迹</strong><p>其中有些是AI，有些只是在自动运行。</p></div></div>
         <button class="phone-scan" data-begin-investigation>
           <b aria-hidden="true"></b>
-          <span><strong>${hasProgress ? "继续上次调查" : "接受案件，开始调查"}</strong><small>点击进入现场</small><i aria-hidden="true">→</i></span>
+          <span><strong>开始调查</strong></span>
         </button>
       </aside>
       <small class="intro-duration">约${experience.durationMinutes}分钟 · 全程本地运行</small>
@@ -247,6 +249,15 @@ export function initLessonExperience({ root, experience, onClose, onComplete }: 
     const target = event.target as HTMLElement;
     if (target.closest("[data-close-investigation]")) { event.preventDefault(); onClose(); return; }
     if (target.closest("[data-reset-investigation]")) { if (window.confirm("确定清除第一课的调查记录并重新开始吗？")) reset(); return; }
+    const introNext = target.closest<HTMLButtonElement>("[data-intro-next]");
+    if (introNext) {
+      const current = introNext.closest<HTMLElement>(".intro-act");
+      const next = current?.nextElementSibling as HTMLElement | null;
+      current?.classList.remove("is-active"); current?.setAttribute("aria-hidden", "true");
+      next?.classList.add("is-active"); next?.removeAttribute("aria-hidden");
+      requestAnimationFrame(() => next?.querySelector<HTMLElement>("button")?.focus());
+      return;
+    }
     if (target.closest("[data-begin-investigation]")) { state.stage = "case"; save(); render("[data-view-title]", true); return; }
     const item = experience.cases[state.caseIndex]; if (!item) return;
     const answer = answerFor(state, item); state.answers[item.id] = answer;
