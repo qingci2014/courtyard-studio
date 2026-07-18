@@ -110,7 +110,7 @@ function renderFaceUnlockCase(experience: LessonExperience, state: Investigation
       </section>
     </main>`;
   }
-  return `<main class="face-unlock-game" data-face-mode="${activeTest}" aria-labelledby="face-game-title">
+  return `<main class="face-unlock-game${tests.length >= 2 ? " has-verdict" : ""}" data-face-mode="${activeTest}" aria-labelledby="face-game-title">
     <div class="case-progress" aria-label="调查进度"><span style="width:0%"></span></div>
     <section class="face-video-stage">
       <video ${motionAllowed ? "autoplay" : ""} muted loop playsinline preload="auto" src="${item.media!.video}" aria-label="清晨宿舍中，学生拿起手机准备解锁"></video>
@@ -276,7 +276,8 @@ export function initLessonExperience({ root, experience, onClose, onComplete }: 
       });
       if (answer.visualTests.length >= 2) {
         const verdict = root.querySelector<HTMLElement>(".face-verdict"); verdict?.removeAttribute("hidden");
-        if (verdict) root.scrollTo({ top: verdict.offsetTop, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        root.querySelector<HTMLElement>(".face-unlock-game")?.classList.add("has-verdict");
+        if (verdict) root.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
       }
       return;
     }
