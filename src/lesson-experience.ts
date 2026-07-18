@@ -222,7 +222,7 @@ function renderReport(experience: LessonExperience, state: InvestigationState): 
 }
 
 export function initLessonExperience({ root, experience, onClose, onComplete }: ExperienceOptions) {
-  const storageKey = `ai-course-${experience.slug}-v1`;
+  const storageKey = `ai-course-${experience.slug}-v2`;
   let state = loadState(storageKey, experience);
 
   const save = () => localStorage.setItem(storageKey, JSON.stringify(state));
