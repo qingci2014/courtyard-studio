@@ -1,5 +1,5 @@
 {
-  "name": "ai-general-education-site",
+  "name": "air-grab-lab",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.32",
     "three": "0.185.0"
   },
   "devDependencies": {
