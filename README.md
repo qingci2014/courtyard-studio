@@ -61,3 +61,14 @@ Codex 用于开发、修改和验证代码；这里的实时视觉识别由预�
 public/vision 包含完整模型和 SIMD / 非 SIMD WASM 回退。首次加载约 20 MB，模型下载后在本机推理。建议在上课前打开一次网站并检查教室光线、摄像头和硬件加速。当前每秒最多约 15 次识别，三维动画独立刷新。
 
 旧课程页面已由本实验替换，原始版本保留在 Git 提交历史中（替换前提交 b9795ca）。
+
+## Blender 模型
+
+机械臂由 Blender 5.1 建模，网页加载 public/models/nexus-arm.glb（约 3 MB）。
+
+- 可编辑源文件：model-source/nexus-arm.blend
+- 独立材质预览：model-source/nexus-preview.png
+- 可复现建模脚本：model-source/build_robot.py
+- rig 节点：arm_upper、arm_forearm、joint_shoulder、joint_elbow、joint_wrist、arm_tool、grip_left、grip_right。
+
+模型采用有厚度的曲面装甲、倒角、分层轴承、活塞、线缆和分节夹爪；冰蓝灯光不使用全屏泛光。Blender 渲染是独立材质预览，网页使用实时灯光，两者光照效果会有差异。
