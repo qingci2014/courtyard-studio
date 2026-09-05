@@ -7,3 +7,25 @@
 .camera-button{background:#192c39;border-color:#3e6178;color:#b9deef}.camera-button:hover{background:#243e50}.camera-placeholder{background:radial-gradient(ellipse,#17252f,transparent)}.camera-icon{color:#6b95ad}.camera-caption{color:#7c9fb5}.camera-corners{border-color:#42627866}
 .gesture-readout i.active,.pipeline i.active{background:#91e0ff;box-shadow:0 0 9px #62c6f877}.small-tag.online{color:#a8e6ff;border-color:#406b83}.cyan-dot{background:#85dfff}.text-btn{color:#9aafc0}.instruction-strip .step-glyph{color:#809fb1}.instruction-strip b{color:#8d9faa}.result-score strong{color:#c0eaff}
 .arena-wrap{background:#0d1117;border-color:#33404c}.round-label{color:#2b3742}
+
+.brand-symbol{flex-shrink:0;line-height:1}.brand-symbol svg{display:block;width:32px;height:32px;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+footer{flex-direction:column;align-items:center;text-align:center;gap:9px}
+
+.instruction-strip .step-glyph{width:42px;height:42px;flex-shrink:0;line-height:0}.step-glyph svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+
+@media(min-width:801px){.stage-column{display:flex;flex-direction:column}.arena-wrap{flex-shrink:0}.instruction-strip{flex:1}.instruction-strip>div{align-items:center}.instruction-strip b{align-self:auto;margin-top:0}}
+/* Let the two live views absorb spare desktop viewport height. */
+@media(min-width:801px){
+ #app{min-height:100dvh;display:grid;grid-template-rows:auto 1fr auto}
+ .workspace{width:100%;min-height:0}
+ .stage-column,.control-column{min-height:0}
+ .arena-wrap{flex:1;min-height:430px}
+ #arena{position:absolute;inset:0;height:100%}
+ .instruction-strip{flex:0 0 auto;min-height:108px}
+ .camera-panel{flex:1;display:flex;flex-direction:column}
+ .camera-panel>.panel-heading,.camera-panel>button,.camera-status,.gesture-readout{flex-shrink:0}
+ .camera-screen{flex:1 0 180px;aspect-ratio:auto;min-height:180px}
+}
+
+@media(min-width:801px){.toast{bottom:19px}}

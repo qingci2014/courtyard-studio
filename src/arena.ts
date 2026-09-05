@@ -49,7 +49,7 @@ export class Arena {
  pointerToWorld(x:number,y:number){const r=this.el.getBoundingClientRect();this.ray.setFromCamera(new T.Vector2((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1),this.camera);return this.ray.ray.intersectPlane(new T.Plane(new T.Vector3(0,1,0),0),new T.Vector3());}
  celebrate(){this.burstLife=1;this.burst.visible=true;const p=this.burst.geometry.attributes.position as T.BufferAttribute;this.particleVelocity=[];for(let i=0;i<p.count;i++){p.setXYZ(i,TARGET.x,.4,TARGET.z);this.particleVelocity.push((Math.random()-.5)*3,2+Math.random()*2,(Math.random()-.5)*3);}p.needsUpdate=true;}
  render(dt:number,time:number){const p=this.game.position;this.robot.update(p,this.game.held!==null||this.game.phase==='down',dt,time);
- this.cubes.forEach((cube,i)=>{const b=this.game.blocks[i]!;cube.position.set(b.x,b.y,b.z);cube.visible=b.cooldown<=0;
+ this.cubes.forEach((cube,i)=>{const b=this.game.blocks[i]!;cube.position.set(b.x,b.y,b.z);cube.rotation.set(b.tiltX??0,0,b.tiltZ??0);cube.visible=b.cooldown<=0;
  const focused=this.game.aimIndex===i;
  const mat=cube.material as T.MeshStandardMaterial;mat.emissive.setHex(focused?0x225c73:0x000000);mat.emissiveIntensity=focused?.45:0;
  const edge=cube.children[0] as T.LineSegments;const edgeMat=edge.material as T.LineBasicMaterial;edgeMat.color.setHex(focused?0xb8f1ff:0xd9ffff);edgeMat.opacity=focused?1:.35;});

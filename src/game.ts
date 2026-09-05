@@ -1,5 +1,6 @@
 export type InputMode = 'mouse' | 'hand';
-export type Block = { x: number; z: number; y: number; color: number; cooldown: number };
+type Fall = { from: { x: number; z: number; y: number }; to: { x: number; z: number }; time: number };
+export type Block = { x: number; z: number; y: number; color: number; cooldown: number; fall?: Fall; tiltX?: number; tiltZ?: number };
 export const TARGET = { x: 2.25, z: .8, half: .85 };
 export const LIMITS = { x: 3.45, z: 2.1 };
 const ACQUIRE_RADIUS = .85;
@@ -43,7 +44,7 @@ export class Game {
     const x = -3 + column * .5, z = -1.8 + row * .45;
     if (Math.abs(x - TARGET.x) < TARGET.half + .5 && Math.abs(z - TARGET.z) < TARGET.half + .5) continue;
     if (Math.hypot(x, z + 2.25) < 1.3 || Math.hypot(x - previous.x, z - previous.z) < .8) continue;
-    if (this.blocks.some((other, i) => i !== index && other.cooldown <= 0 && Math.hypot(x - other.x, z - other.z) < 1.05)) continue;
+    if (!this.clearLanding({ x, z }, index, 1.05)) continue;
     candidates.push({ x, z });
    }
   }
@@ -51,6 +52,42 @@ export class Game {
   const point = candidates[Math.min(candidates.length - 1, Math.floor(this.random() * candidates.length))]!;
   Object.assign(this.blocks[index]!, point, { y: .28, cooldown: 0 });
   this.lastSpawns[index] = { ...point };
+ }
+ private clearLanding(p: { x: number; z: number }, index: number, margin = .85) {
+  return !this.blocks.some((b, i) => i !== index && b.cooldown <= 0 &&
+   (Math.hypot(p.x - b.x, p.z - b.z) < margin ||
+    (b.fall && Math.hypot(p.x - b.fall.to.x, p.z - b.fall.to.z) < margin)));
+ }
+ private landing(index: number) {
+  const b = this.blocks[index]!;
+  const candidates: { x: number; z: number }[] = [];
+  for (const radius of [1.05, 1.35, 1.7, 2.1]) {
+   for (let i = 0; i < 24; i++) {
+    const angle = i * Math.PI / 12;
+    const p = { x: b.x + Math.cos(angle) * radius, z: b.z + Math.sin(angle) * radius };
+    if (Math.abs(p.x) > 3.05 || Math.abs(p.z) > 1.8 || Math.hypot(p.x, p.z + 2.25) < 1.3) continue;
+    if (Math.abs(p.x - TARGET.x) < TARGET.half + .4 && Math.abs(p.z - TARGET.z) < TARGET.half + .4) continue;
+    if (this.clearLanding(p, index)) candidates.push(p);
+   }
+   if (candidates.length) break;
+  }
+  return candidates[Math.min(candidates.length - 1, Math.floor(this.random() * candidates.length))];
+ }
+ private animateFall(b: Block, dt: number) {
+  const f = b.fall!; f.time += dt;
+  const t = Math.min(1, f.time / .95);
+  // Clear the supporting cube before descending; then bounce and settle flat.
+  const slide = Math.min(1, t / .48);
+  const travel = 1 - (1 - slide) ** 2;
+  b.x = f.from.x + (f.to.x - f.from.x) * travel;
+  b.z = f.from.z + (f.to.z - f.from.z) * travel;
+  const drop = Math.max(0, Math.min(1, (t - .42) / .32));
+  const bounce = t > .74 ? .12 * Math.sin((t - .74) / .26 * Math.PI) : 0;
+  const tilt = Math.sin(Math.PI * Math.min(1, t / .84)) * .55;
+  const angle = Math.atan2(f.to.z - f.from.z, f.to.x - f.from.x);
+  b.tiltX = Math.sin(angle) * tilt; b.tiltZ = -Math.cos(angle) * tilt;
+  b.y = f.from.y + (.28 - f.from.y) * drop ** 2 + bounce + .12 * Math.sin(Math.PI * slide);
+  if (t === 1) { b.y = .28; b.tiltX = 0; b.tiltZ = 0; b.fall = undefined; }
  }
  start() { this.reset(); this.state = 'running'; this.message = '挑战开始！靠近方块，亮起后抓取'; this.messageTime = 2; }
  pause() { if (this.state === 'running') { this.state = 'paused'; this.message = '挑战已暂停，点击继续'; } }
@@ -63,11 +100,11 @@ export class Game {
   if (this.phase !== 'hover' || this.state === 'paused' || this.state === 'finished') return;
   const distance = (b: Block) => Math.hypot(b.x - this.target.x, b.z - this.target.z);
   let nearest: number | null = null, best = ACQUIRE_RADIUS;
-  this.blocks.forEach((b, i) => { const d = distance(b); if (b.cooldown <= 0 && d < best) { nearest = i; best = d; } });
+  this.blocks.forEach((b, i) => { const d = distance(b); if (!b.fall && b.cooldown <= 0 && d < best) { nearest = i; best = d; } });
   const old = this.focus === null ? undefined : this.blocks[this.focus];
   // Keep a visible lock through small movements; deliberately moving closer to
   // another block still switches targets without requiring a full exit.
-  if (old && old.cooldown <= 0 && distance(old) < RETAIN_RADIUS && (nearest === null || best + .18 >= distance(old))) return;
+  if (old && !old.fall && old.cooldown <= 0 && distance(old) < RETAIN_RADIUS && (nearest === null || best + .18 >= distance(old))) return;
   this.focus = nearest;
  }
  private nearZone(p: { x: number; z: number }) {
@@ -101,6 +138,7 @@ export class Game {
   if (this.mode === 'hand' && !this.tracked) return;
   this.messageTime = Math.max(0, this.messageTime - dt);
   this.blocks.forEach((block, index) => {
+   if (block.fall) this.animateFall(block, dt);
    if (block.cooldown > 0) {
     block.cooldown -= dt;
     if (block.cooldown <= 0) this.respawn(index);
@@ -114,23 +152,31 @@ export class Game {
   this.position.x += (destination.x - this.position.x) * a;
   this.position.z += (destination.z - this.position.z) * a;
   const low = this.phase === 'down' || this.phase === 'drop';
-  this.position.y += ((low ? .72 : 2.1) - this.position.y) * (1 - Math.exp(-dt * 10));
+  const support = this.phase === 'drop' ? this.blocks.find((b, i) => i !== this.held && b.cooldown <= 0 &&
+   Math.abs(b.x - this.action.x) < .56 && Math.abs(b.z - this.action.z) < .56) : undefined;
+  const releaseHeight = support ? Math.max(1.24, support.y + .96) : .72;
+  this.position.y += ((low ? this.phase === 'drop' ? releaseHeight : .72 : 2.1) - this.position.y) * (1 - Math.exp(-dt * 10));
   if (this.held !== null) { const b = this.blocks[this.held]!; b.x = this.position.x; b.z = this.position.z; b.y = this.position.y - .44; }
   const aligned = Math.hypot(this.position.x - this.action.x, this.position.z - this.action.z) < .1;
   if (this.phase === 'down' && this.position.y < .77 && aligned) {
    const block = this.grabbing === null ? null : this.blocks[this.grabbing];
-   if (block && block.cooldown <= 0 && Math.hypot(block.x - this.position.x, block.z - this.position.z) < .2) {
+   if (block && !block.fall && block.cooldown <= 0 && Math.hypot(block.x - this.position.x, block.z - this.position.z) < .2) {
     this.held = this.grabbing; this.message = '抓住了！保持捏合，移向投放区';
    } else { this.message = '先靠近方块，看到「可以抓取」再捏合'; this.onEvent?.('miss'); }
    this.messageTime = 2; this.phase = 'lift'; this.focus = null; this.grabbing = null;
   }
   if (this.phase === 'lift' && this.position.y > 2.04) { this.phase = this.held === null ? 'hover' : 'carry'; if (this.phase === 'carry' && !this.grip) this.beginDrop(); }
-  if (this.phase === 'drop' && this.position.y < .77 && aligned) {
+  if (this.phase === 'drop' && this.position.y < releaseHeight + .05 && aligned) {
    if (this.held !== null) {
-    const b = this.blocks[this.held]!; b.y = .28;
+    const b = this.blocks[this.held]!;
     const good = Math.abs(b.x - TARGET.x) <= TARGET.half - .27 && Math.abs(b.z - TARGET.z) <= TARGET.half - .27;
-    if (good) { this.score += 10; b.cooldown = .8; this.message = '+10！准确投放'; this.onEvent?.('score'); }
-    else { this.message = '已放回桌面，靠近投放区后再松开'; this.onEvent?.('miss'); }
+    if (good) { b.y = .28; this.score += 10; b.cooldown = .8; this.message = '+10！准确投放'; this.onEvent?.('score'); }
+    else if (support) {
+     const to = this.landing(this.held);
+     if (!to) return; // Keep holding until a clear landing is available.
+     b.fall = { from: { x: b.x, z: b.z, y: b.y }, to, time: 0 };
+     this.message = '碰到方块，向旁边滑落'; this.onEvent?.('miss');
+    } else { b.y = .28; this.message = '已放回桌面，靠近投放区后再松开'; this.onEvent?.('miss'); }
     this.messageTime = 2; this.held = null;
    }
    this.phase = 'lift';

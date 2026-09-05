@@ -3,6 +3,29 @@ import {Game,TARGET} from '../game';
 const tick=(g:Game,seconds=2)=>{for(let t=0;t<seconds;t+=.02)g.update(.02);};
 function pickup(g:Game){g.setTarget(-2.4,-.7);tick(g);g.setGrip(true);tick(g);expect(g.held).toBe(0);}
 describe('Air grab interaction state',()=>{
+ it('slides an overlapping release to a random clear neighbour with tilt and bounce',()=>{
+  const landings=new Set<string>();
+  for(const random of [0,.25,.5,.75,.99]){
+   const g=new Game(()=>random);pickup(g);
+   const support={...g.blocks[1]!};g.setTarget(support.x,support.z);tick(g);g.setGrip(false);
+   for(let i=0;i<100&&!g.blocks[0]!.fall;i++)g.update(.01);
+   const b=g.blocks[0]!;expect(b.fall).toBeDefined();expect(b.y).toBeGreaterThan(.79);expect(g.held).toBeNull();
+   tick(g,.2);expect(Math.abs(b.tiltX!)+Math.abs(b.tiltZ!)).toBeGreaterThan(.1);
+   g.setTarget(b.x,b.z);expect(g.aimIndex).not.toBe(0);
+   tick(g,1.2);expect(b.fall).toBeUndefined();expect(b.y).toBe(.28);expect(b.tiltX).toBe(0);expect(b.tiltZ).toBe(0);
+   expect(g.blocks[1]).toEqual(support);expect(g.score).toBe(0);
+   expect(Math.abs(b.x)).toBeLessThanOrEqual(3.05);expect(Math.abs(b.z)).toBeLessThanOrEqual(1.8);
+   g.blocks.slice(1).forEach(other=>expect(Math.hypot(b.x-other.x,b.z-other.z)).toBeGreaterThanOrEqual(.85));
+   landings.add(`${b.x},${b.z}`);
+  }
+  expect(landings.size).toBeGreaterThan(2);
+ });
+ it('pauses a fall and clears it when restarting',()=>{
+  const g=new Game();g.start();pickup(g);g.setTarget(-1.9,1.2);tick(g);g.setGrip(false);
+  for(let i=0;i<100&&!g.blocks[0]!.fall;i++)g.update(.01);
+  expect(g.blocks[0]!.fall).toBeDefined();g.pause();const before=JSON.stringify(g.blocks);tick(g);expect(JSON.stringify(g.blocks)).toBe(before);
+  g.reset();expect(g.blocks.every(b=>!b.fall)).toBe(true);
+ });
  it('snaps a nearby highlighted block and catches it even before the claw arrives',()=>{const g=new Game();g.setTarget(-1.7,-.7);expect(g.aimIndex).toBe(0);g.setGrip(true);g.setTarget(3,-2);tick(g);expect(g.held).toBe(0);expect(g.attempts).toBe(1);});
  it('does not grab a distant block when clicking empty space',()=>{const g=new Game();g.setTarget(3,-2);expect(g.aimIndex).toBeNull();g.setGrip(true);tick(g);expect(g.held).toBeNull();});
  it('keeps a target through small jitter but allows intentional switching',()=>{const g=new Game();g.blocks[0]!.x=-.4;g.blocks[0]!.z=0;g.blocks[1]!.x=.4;g.blocks[1]!.z=0;g.setTarget(-.15,0);expect(g.aimIndex).toBe(0);g.setTarget(.05,0);expect(g.aimIndex).toBe(0);g.setTarget(.3,0);expect(g.aimIndex).toBe(1);g.setTarget(3,-2);expect(g.aimIndex).toBeNull();});
