@@ -17,9 +17,10 @@ export class Game {
  private messageTime = 0;
  private focus: number | null = null;
  private grabbing: number | null = null;
+ private lastSpawns: { x: number; z: number }[] = [];
  get aimIndex() { return this.phase === 'hover' ? this.focus : this.phase === 'down' ? this.grabbing : null; }
  get dropReady() { return this.held !== null && this.phase === 'carry' && this.nearZone(this.target); }
- constructor() { this.reset(); }
+ constructor(private random: () => number = Math.random) { this.reset(); }
  reset() {
   this.state = 'practice'; this.score = 0; this.remaining = 60; this.attempts = 0;
   this.held = null; this.grip = false; this.needOpen = false; this.phase = 'hover';
@@ -30,7 +31,26 @@ export class Game {
    { x: -1.9, z: 1.2, y: .28, color: 0xffb657, cooldown: 0 },
    { x: -.3, z: -1, y: .28, color: 0xad94ff, cooldown: 0 },
   ];
+  this.lastSpawns = this.blocks.map(({ x, z }) => ({ x, z }));
   this.message = '靠近方块，亮起轮廓后捏合抓取';
+ }
+ private respawn(index: number) {
+  const previous = this.lastSpawns[index]!;
+  const candidates: { x: number; z: number }[] = [];
+  // A bounded pool gives predictable runtime and leaves a margin at table edges.
+  for (let column = 0; column <= 12; column++) {
+   for (let row = 0; row <= 8; row++) {
+    const x = -3 + column * .5, z = -1.8 + row * .45;
+    if (Math.abs(x - TARGET.x) < TARGET.half + .5 && Math.abs(z - TARGET.z) < TARGET.half + .5) continue;
+    if (Math.hypot(x, z + 2.25) < 1.3 || Math.hypot(x - previous.x, z - previous.z) < .8) continue;
+    if (this.blocks.some((other, i) => i !== index && other.cooldown <= 0 && Math.hypot(x - other.x, z - other.z) < 1.05)) continue;
+    candidates.push({ x, z });
+   }
+  }
+  if (!candidates.length) { this.blocks[index]!.cooldown = .1; return; }
+  const point = candidates[Math.min(candidates.length - 1, Math.floor(this.random() * candidates.length))]!;
+  Object.assign(this.blocks[index]!, point, { y: .28, cooldown: 0 });
+  this.lastSpawns[index] = { ...point };
  }
  start() { this.reset(); this.state = 'running'; this.message = '挑战开始！靠近方块，亮起后抓取'; this.messageTime = 2; }
  pause() { if (this.state === 'running') { this.state = 'paused'; this.message = '挑战已暂停，点击继续'; } }
@@ -83,7 +103,7 @@ export class Game {
   this.blocks.forEach((block, index) => {
    if (block.cooldown > 0) {
     block.cooldown -= dt;
-    if (block.cooldown <= 0) { const spawn = [[-2.4, -.7], [-1.9, 1.2], [-.3, -1]][index]!; block.x = spawn[0]!; block.z = spawn[1]!; block.y = .28; }
+    if (block.cooldown <= 0) this.respawn(index);
    }
   });
   this.updateAim();
