@@ -5,7 +5,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 export class Arena {
  private scene=new T.Scene(); private camera=new T.PerspectiveCamera(35,1,.1,100); private renderer:T.WebGLRenderer;
- private robot:Robot;readonly ready:Promise<void>;private cubes:T.Mesh[]=[];private cursor:T.Mesh;private guide:T.Line;private burst:T.Points;private burstLife=0;private particleVelocity:number[]=[];private ray=new T.Raycaster();
+ private robot:Robot;readonly ready:Promise<void>;private cubes:T.Mesh[]=[];private cursor:T.Mesh;private aimHalo:T.Mesh;private aimLabel:T.Sprite;private guide:T.Line;private burst:T.Points;private burstLife=0;private particleVelocity:number[]=[];private ray=new T.Raycaster();
  constructor(private el:HTMLElement,private game:Game){
  this.renderer=new T.WebGLRenderer({antialias:true,alpha:true});this.renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=T.PCFSoftShadowMap;this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=.95;el.appendChild(this.renderer.domElement);
  this.camera.position.set(6,8.8,11.5);this.camera.lookAt(0,1,0);this.scene.fog=new T.FogExp2(0x0b141e,.022);
@@ -34,7 +34,11 @@ export class Arena {
  const underglow=this.box(7.8,.025,5.1,trim);underglow.position.y=-.38;
  for(const block of game.blocks){const cube=new T.Mesh(new RoundedBoxGeometry(.52,.52,.52,2,.04),new T.MeshStandardMaterial({color:block.color,roughness:.26,metalness:.3}));cube.castShadow=true;cube.receiveShadow=true;const edges=new T.LineSegments(new T.EdgesGeometry(cube.geometry),new T.LineBasicMaterial({color:0xd9ffff,transparent:true,opacity:.35}));cube.add(edges);this.cubes.push(cube);this.scene.add(cube);}
  this.cursor=new T.Mesh(new T.RingGeometry(.34,.38,48),new T.MeshBasicMaterial({color:0x7eeaff,side:T.DoubleSide,transparent:true,opacity:.95}));this.cursor.rotation.x=-Math.PI/2;this.scene.add(this.cursor);
- this.guide=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3()]),new T.LineDashedMaterial({color:0x5bcdf6,transparent:true,opacity:.45,dashSize:.12,gapSize:.08}));this.scene.add(this.guide);
+
+ this.aimHalo=new T.Mesh(new T.RingGeometry(.51,.55,64),new T.MeshBasicMaterial({color:0x8fe6ff,side:T.DoubleSide,transparent:true,opacity:.8}));this.aimHalo.rotation.x=-Math.PI/2;this.aimHalo.visible=false;this.scene.add(this.aimHalo);
+ const tagCanvas=document.createElement('canvas');tagCanvas.width=384;tagCanvas.height=96;const tagContext=tagCanvas.getContext('2d')!;tagContext.fillStyle='#122d3ce6';tagContext.fillRect(0,0,384,96);tagContext.strokeStyle='#8fe6ff';tagContext.lineWidth=3;tagContext.strokeRect(2,2,380,92);tagContext.font='500 36px Microsoft YaHei, sans-serif';tagContext.fillStyle='#cef3ff';tagContext.textAlign='center';tagContext.fillText('可以抓取',192,61);
+ this.aimLabel=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(tagCanvas),depthTest:false,transparent:true}));this.aimLabel.scale.set(1.45,.36,1);this.aimLabel.visible=false;this.scene.add(this.aimLabel);
+ this.guide=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3()]),new T.LineDashedMaterial({color:0x5bcdf6,transparent:true,opacity:.45,dashSize:.12,gapSize:.08}));this.guide.frustumCulled=false;this.scene.add(this.guide);
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(new Float32Array(60*3),3));this.burst=new T.Points(geometry,new T.PointsMaterial({color:0xffca73,size:.08,transparent:true,opacity:1}));this.burst.visible=false;this.scene.add(this.burst);
 
  const observer=new ResizeObserver(()=>this.resize());observer.observe(el);this.resize();
@@ -45,7 +49,14 @@ export class Arena {
  pointerToWorld(x:number,y:number){const r=this.el.getBoundingClientRect();this.ray.setFromCamera(new T.Vector2((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1),this.camera);return this.ray.ray.intersectPlane(new T.Plane(new T.Vector3(0,1,0),0),new T.Vector3());}
  celebrate(){this.burstLife=1;this.burst.visible=true;const p=this.burst.geometry.attributes.position as T.BufferAttribute;this.particleVelocity=[];for(let i=0;i<p.count;i++){p.setXYZ(i,TARGET.x,.4,TARGET.z);this.particleVelocity.push((Math.random()-.5)*3,2+Math.random()*2,(Math.random()-.5)*3);}p.needsUpdate=true;}
  render(dt:number,time:number){const p=this.game.position;this.robot.update(p,this.game.held!==null||this.game.phase==='down',dt,time);
- this.cubes.forEach((cube,i)=>{const b=this.game.blocks[i]!;cube.position.set(b.x,b.y,b.z);cube.visible=b.cooldown<=0;});
+ this.cubes.forEach((cube,i)=>{const b=this.game.blocks[i]!;cube.position.set(b.x,b.y,b.z);cube.visible=b.cooldown<=0;
+ const focused=this.game.aimIndex===i;
+ const mat=cube.material as T.MeshStandardMaterial;mat.emissive.setHex(focused?0x225c73:0x000000);mat.emissiveIntensity=focused?.45:0;
+ const edge=cube.children[0] as T.LineSegments;const edgeMat=edge.material as T.LineBasicMaterial;edgeMat.color.setHex(focused?0xb8f1ff:0xd9ffff);edgeMat.opacity=focused?1:.35;});
+ const index=this.game.aimIndex;const focused=index===null?null:this.game.blocks[index];
+ this.aimHalo.visible=!!focused;this.aimLabel.visible=!!focused&&this.game.phase==='hover';
+ if(focused){this.aimHalo.position.set(focused.x,.045,focused.z);this.aimLabel.position.set(focused.x,.95,focused.z);}
+ (this.cursor.material as T.MeshBasicMaterial).color.setHex(this.game.dropReady?0xffd391:focused?0xb6f3ff:0x7eeaff);
  this.cursor.position.set(p.x,.03,p.z);this.cursor.scale.setScalar(1+Math.sin(time*3)*.03);const points=this.guide.geometry.attributes.position as T.BufferAttribute;points.setXYZ(0,p.x,.05,p.z);points.setXYZ(1,p.x,p.y-.45,p.z);points.needsUpdate=true;this.guide.computeLineDistances();
  if(this.burstLife>0){this.burstLife-=dt;const pos=this.burst.geometry.attributes.position as T.BufferAttribute;for(let i=0;i<pos.count;i++){this.particleVelocity[i*3+1]!-=dt*5;pos.setXYZ(i,pos.getX(i)+this.particleVelocity[i*3]!*dt,pos.getY(i)+this.particleVelocity[i*3+1]!*dt,pos.getZ(i)+this.particleVelocity[i*3+2]!*dt);}pos.needsUpdate=true;(this.burst.material as T.PointsMaterial).opacity=Math.max(0,this.burstLife);this.burst.visible=this.burstLife>0;}
  this.renderer.render(this.scene,this.camera);
