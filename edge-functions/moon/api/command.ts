@@ -1,7 +1,7 @@
 import {interpretMoon} from '../../../moon/app/moon-model-command';
 import {ModelError,type ModelConfig} from '../../../moon/app/model-command';
-const config=(e:Record<string,unknown>):ModelConfig=>{return {key:e.WORKSHOP_MODEL_ENABLED==='true'&&typeof e.WORKSHOP_MODEL_KEY==='string'?e.WORKSHOP_MODEL_KEY:undefined,baseUrl:typeof e.WORKSHOP_MODEL_BASE_URL==='string'?e.WORKSHOP_MODEL_BASE_URL:undefined,model:typeof e.WORKSHOP_MODEL==='string'?e.WORKSHOP_MODEL:undefined};};
-const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
+const config=(e:Record<string,unknown>={}):ModelConfig=>{return {key:e.WORKSHOP_MODEL_ENABLED==='true'&&typeof e.WORKSHOP_MODEL_KEY==='string'?e.WORKSHOP_MODEL_KEY:undefined,baseUrl:typeof e.WORKSHOP_MODEL_BASE_URL==='string'?e.WORKSHOP_MODEL_BASE_URL:undefined,model:typeof e.WORKSHOP_MODEL==='string'?e.WORKSHOP_MODEL:undefined};};
+const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
 export function onRequestGet({env}:{env:Record<string,unknown>}){const c=config(env);return json({configured:!!(c.key&&c.baseUrl&&c.model),provider:'DeepSeek',model:c.model??null});}
 export async function onRequestPost({request,env}:{request:Request;env:Record<string,unknown>}){
  if(request.headers.get('origin')!==new URL(request.url).origin)return json({error:'请求来源无效。'},403);
