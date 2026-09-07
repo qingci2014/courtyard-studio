@@ -10,11 +10,11 @@ class Element extends EventTarget {
  getContext(){return {fillStyle:'',font:'',textAlign:'',fillRect(){},fillText(){}};}
 }
 afterEach(()=>vi.unstubAllGlobals());
-it('aims at the scene Earth, clamps zoom, and restores the exact walking camera on exit',()=>{
+it('opens on the wide sky, clamps zoom, and restores the exact walking camera on exit',()=>{
  const doc=new Element() as Element&{createElement:()=>Element};doc.createElement=()=>new Element();vi.stubGlobal('document',doc);vi.stubGlobal('window',new Element());
  const scope=new MoonTelescope(),host=new Element(),camera=new T.PerspectiveCamera(83,1,.05,10000);camera.position.set(7,1.78,14);camera.rotation.set(.2,.3,0);const position=camera.position.clone(),rotation=camera.quaternion.clone();
- scope.enter(camera,host as unknown as HTMLElement,()=>scope.exit(camera));expect(scope.active).toBe(true);expect(camera.layers.mask).toBe(2);
- expect(camera.getWorldDirection(new T.Vector3()).dot(EARTH_POSITION.clone().sub(camera.position).normalize())).toBeCloseTo(1,9);
+ scope.enter(camera,host as unknown as HTMLElement,()=>scope.exit(camera));expect(scope.active).toBe(true);expect(camera.layers.mask).toBe(2);expect(camera.fov).toBe(64);
+ expect(camera.getWorldDirection(new T.Vector3()).dot(new T.Vector3(0,2700,-5600).sub(camera.position).normalize())).toBeCloseTo(1,9);
  const panel=host.children[0],buttons=panel.querySelector('.scope-buttons').children;
  for(let i=0;i<100;i++)buttons[2].onclick!();expect(camera.fov).toBe(2);
  for(let i=0;i<100;i++)buttons[1].onclick!();expect(camera.fov).toBe(64);
