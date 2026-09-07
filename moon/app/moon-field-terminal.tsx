@@ -1,0 +1,10 @@
+'use client';
+import {useState} from 'react';
+import {fieldSites,type FieldSiteId} from './moon-exploration';
+export function FieldTerminal({siteId,onSubmit,onClose}:{siteId:FieldSiteId;onSubmit:(answer:unknown)=>boolean;onClose:()=>void}){
+ const [circuits,setCircuits]=useState([false,true,false]),[order,setOrder]=useState<string[]>([]),[angles,setAngles]=useState([0,0]),[error,setError]=useState('');
+ const site=fieldSites.find(s=>s.id===siteId)!;
+ return <section className="moon-calibration" role="dialog" aria-modal="true" aria-label={site.name+'现场调查'}><div><button className="moon-calibration-close" aria-label="关闭调查终端" onClick={onClose}>×</button><p>EXPEDITION / 现场调查</p><h2>{site.name}</h2>
+ {siteId==='sample-station'?<><p>采样分析器断电。诊断显示：A 岩芯传感器正常，B 加热器短路，C 记录器正常。接通正常支路，隔离故障支路。</p><div className="moon-terminal-options">{['A · 岩芯传感器','B · 加热器','C · 记录器'].map((label,i)=><button key={label} aria-pressed={circuits[i]} onClick={()=>setCircuits(v=>v.map((n,j)=>i===j?!n:n))}>{label}：{circuits[i]?'接通':'断开'}</button>)}</div></>:siteId==='lost-lander'?<><p>破损电池仍连接着飞行记录器。按安全顺序恢复数据：先切断故障供电，再启用备用电源，最后提取记录。</p><div className="moon-terminal-options">{[['extract','提取飞行记录'],['isolate','隔离破损电池'],['restore','启用备用电源']].map(([id,label])=><button key={id} disabled={order.includes(id)} onClick={()=>setOrder(v=>[...v,id])}>{order.includes(id)?`${order.indexOf(id)+1}. `:''}{label}</button>)}<button onClick={()=>setOrder([])}>清空顺序</button></div></>:<><p>将观测镜对准坑壁异常反射区域。定位记录：方位 036°，仰角 12°。刻度进入容差后锁定观测。</p><div className="moon-scope" style={{backgroundPosition:`${50+(36-angles[0])*1.2}% ${50+(angles[1]-12)*2.5}%`}}>＋<small>AZ {angles[0]}° / EL {angles[1]}°</small></div>{['方位角','仰角'].map((label,i)=><label key={label}>{label}：{angles[i]}°<input aria-label={label} type="range" min={0} max={i?30:90} value={angles[i]} onChange={e=>setAngles(v=>v.map((n,j)=>i===j?Number(e.target.value):n))}/></label>)}</>}
+ {error&&<p role="status">{error}</p>}<button className="moon-calibration-submit" onClick={()=>{if(!onSubmit(siteId==='sample-station'?circuits:siteId==='lost-lander'?order:angles))setError('设备未能就绪。请核对诊断说明；也需要保持在现场终端附近。');}}>确认并采集记录</button></div></section>;
+}

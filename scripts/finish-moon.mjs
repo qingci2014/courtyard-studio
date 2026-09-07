@@ -1,0 +1,1 @@
+import {mkdir,copyFile} from 'node:fs/promises';await mkdir('dist/moon/cockpit',{recursive:true});await copyFile('dist/moon/index.html','dist/moon/cockpit/index.html');

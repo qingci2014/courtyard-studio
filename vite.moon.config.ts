@@ -1,0 +1,1 @@
+import {defineConfig} from 'vite';export default defineConfig({root:'moon',base:'/moon/',esbuild:{jsx:'automatic'},build:{outDir:'../dist/moon',emptyOutDir:false,target:'es2022'}});

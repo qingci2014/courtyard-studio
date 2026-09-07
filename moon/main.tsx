@@ -1,0 +1,1 @@
+import React from 'react';import {createRoot} from 'react-dom/client';import MoonPage from './app/moon-page';import CockpitPage from './app/cockpit-page';import './reset.css';createRoot(document.getElementById('root')!).render(location.pathname.startsWith('/moon/cockpit')?<CockpitPage/>:<MoonPage/>);

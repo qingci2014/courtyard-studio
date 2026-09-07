@@ -1,0 +1,3 @@
+import {readFileSync,existsSync} from 'node:fs';import assert from 'node:assert/strict';
+for(const path of ['dist/index.html','dist/moon/index.html','dist/moon/cockpit/index.html','dist/moon/content/base.glb','dist/moon/content/cockpit.glb'])assert(existsSync(path),path);
+const html=readFileSync('dist/moon/index.html','utf8');for(const match of html.matchAll(/(?:src|href)="(\/moon\/[^\"]+)"/g))assert(existsSync('dist'+match[1]),match[1]);assert(!html.includes('src="/assets/'));assert.equal(readFileSync('dist/moon/cockpit/index.html','utf8'),html);console.log('PASS: original homepage and both lunar entries exist; lunar bundles and models stay under /moon/.');
