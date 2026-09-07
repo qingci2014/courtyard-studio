@@ -19,3 +19,5 @@
 
 .moon-calibration button[aria-pressed]{padding:8px 18px;border:1px solid #597482;border-radius:6px;background:#15242e}.moon-calibration button[aria-pressed=true]{background:#335663;border-color:#a8dced}
 .moon-app .moon-calibration-submit{color:#102537;font-weight:600}
+
+.moon-status-stack{position:absolute;top:100px;right:38px;display:flex;flex-direction:column;align-items:stretch;gap:12px;max-width:calc(100vw - 32px);pointer-events:none}.moon-status-stack .moon-driving{position:static}.moon-signal-card{padding:14px 18px;background:#08141cef;border:1px solid #63859466;border-radius:8px;font-size:13px;color:#c9e6f7}.moon-signal-card strong{display:block;margin:8px 0 4px}.moon-signal-card small{display:block;color:#9bb9cc}@media(max-width:800px){.moon-status-stack{right:16px;top:90px;gap:10px}}
