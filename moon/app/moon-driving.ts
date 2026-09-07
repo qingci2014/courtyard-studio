@@ -14,10 +14,10 @@ export function roverFits(x:number,z:number,yaw:number,obstacles:RoverObstacle[]
 }
 export function advanceRover(p:RoverPose,input:RoverInput,elapsed:number,obstacles:RoverObstacle[],surface:Surface){
  const dt=Math.max(0,Math.min(.04,elapsed)),throttle=Math.max(-1,Math.min(1,input.throttle)),steer=Math.max(-1,Math.min(1,input.steer));
- const target=input.brake?0:throttle*(throttle<0?2.2:6),rate=input.brake?12:throttle?3.5:2.5;
+ const target=input.brake?0:throttle*(throttle<0?3:10),rate=input.brake?18:throttle?5:3.5;
  let speed=p.speed+Math.max(-rate*dt,Math.min(rate*dt,target-p.speed));
  // Differential wheel steering remains available at rest; the brake holds both sides.
- const steeringRate=.75+.4*Math.min(1,Math.abs(speed)/2);
+ const steeringRate=(.75+.4*Math.min(1,Math.abs(speed)/2))/(1+Math.max(0,Math.abs(speed)-5)*.12);
  const turn=input.brake?0:steer*dt*steeringRate*(speed<-.05?-1:1),yaw=p.yaw+turn,travel=speed*dt;
  const x=p.x+Math.sin(yaw)*travel,z=p.z+Math.cos(yaw)*travel;
  if(!roverFits(x,z,yaw,obstacles,surface))return {pose:{...p,speed:0},travel:0,turn:0,blocked:true};
