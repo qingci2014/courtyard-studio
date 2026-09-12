@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { ProductionView } from './production-view';
 import type { TaskSnapshot } from './production-task';
+import { applyEquipmentFinishes } from './equipment-finishes';
 import { DeviceHighlight } from './device-highlight';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -40,7 +41,7 @@ export class Workshop{
  }
  private async load(){
   const [gltf,response]=await Promise.all([new GLTFLoader().loadAsync('/factory/models/workshop.glb'),fetch('/factory/models/layout.json')]);if(!response.ok)throw Error('Layout unavailable');const layout=await response.json() as {devices:Device[];colliders:Collider[];bounds:{x:number;z:number};spawn:[number,number,number]};if(this.stopped){this.release(gltf.scene);return [];}
-  this.bounds=layout.bounds;this.spawn=layout.spawn;this.devices=layout.devices;this.obstacles=layout.colliders;this.model=gltf.scene;
+  this.bounds=layout.bounds;this.spawn=layout.spawn;this.devices=layout.devices;this.obstacles=layout.colliders;this.model=gltf.scene;applyEquipmentFinishes(this.model);
   this.model.traverse(ob=>{if(ob.userData.deviceId==='ROOF'){this.roof=ob;ob.visible=false;}if(ob.userData.deviceId&&this.devices.some(d=>d.id===ob.userData.deviceId))this.objects.set(ob.userData.deviceId,ob);if(ob instanceof T.Mesh){ob.castShadow=true;ob.receiveShadow=true;}});
   if(this.objects.size!==this.devices.length)throw Error('Device identities missing');this.scene.add(this.model);this.production=new ProductionView(this.scene,this.objects,this.obstacles);this.hooks.task(this.production.task.snapshot());this.registerTools();return this.devices;
  }

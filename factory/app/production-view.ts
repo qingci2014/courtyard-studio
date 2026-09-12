@@ -14,7 +14,7 @@ class AssemblyArm{
   const x=d.x,z=d.z,r=Math.max(.001,Math.hypot(x,z)),dy=d.y-a.y,L1=Math.hypot(.12,1.15),L2=Math.hypot(.78,.45)+Math.hypot(.38,.45);
   const distance=Math.min(L1+L2-.001,Math.max(.01,Math.hypot(r,dy))),angle=Math.atan2(dy,r)+Math.acos(T.MathUtils.clamp((L1*L1+distance*distance-L2*L2)/(2*L1*distance),-1,1));
   const b=new T.Vector3(x/r*L1*Math.cos(angle),a.y+L1*Math.sin(angle),z/r*L1*Math.cos(angle)),c=b.clone().lerp(d,Math.hypot(.78,.45)/L2),points=[a,b,c,d];
-  for(let i=0;i<3;i++){const direction=points[i+1].clone().sub(points[i]);this.shells[i].position.copy(points[i]).add(points[i+1]).multiplyScalar(.5);this.shells[i].quaternion.setFromUnitVectors(new T.Vector3(0,0,1),direction.normalize());this.joints[i].position.copy(points[i]);this.lights[i].position.copy(points[i]).add(new T.Vector3(-z/r*.19,0,x/r*.19));const axis=new T.Vector3(-z/r,0,x/r);this.joints[i].quaternion.setFromUnitVectors(new T.Vector3(0,0,1),axis);this.lights[i].quaternion.copy(this.joints[i].quaternion);}
+  for(let i=0;i<3;i++){const direction=points[i+1].clone().sub(points[i]);this.shells[i].position.copy(points[i]).add(points[i+1]).multiplyScalar(.5);this.shells[i].quaternion.setFromUnitVectors(new T.Vector3(0,1,0),direction.normalize());this.joints[i].position.copy(points[i]);this.lights[i].position.copy(points[i]).add(new T.Vector3(-z/r*.19,0,x/r*.19));const axis=new T.Vector3(-z/r,0,x/r);this.joints[i].quaternion.setFromUnitVectors(new T.Vector3(0,1,0),axis);this.lights[i].quaternion.copy(this.joints[i].quaternion);}
   this.wrist.position.copy(d).add(new T.Vector3(0,-.115,0));this.wrist.quaternion.copy(this.rest.get(this.wrist)!.q);
   this.fingers.forEach((f,i)=>{const spacing=closed?.16:.27;f.position.copy(d).add(new T.Vector3((i?1:-1)*spacing,-.33,0));});
  }
@@ -45,3 +45,4 @@ export class ProductionView{
  reset(){this.task.reset();this.wheelAngle=0;this.lastVehicle.fromArray(this.task.vehicle);this.sync();}
  dispose(){if(this.disposed)return;this.disposed=true;this.arm.reset();this.changed.forEach(o=>o.visible=true);for(const o of [this.cargo,this.path,this.lift,this.spark]){this.scene.remove(o);o.traverse(n=>{if(n instanceof T.Mesh||n instanceof T.Line){n.geometry.dispose();const materials=Array.isArray(n.material)?n.material:[n.material];materials.forEach(m=>m.dispose());}});}}
 }
+
