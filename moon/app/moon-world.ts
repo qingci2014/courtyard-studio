@@ -1,4 +1,5 @@
 import {atCockpitLadder} from './moon-cockpit-entry';
+import {rememberCockpitReturn,takeCockpitReturn} from './moon-cockpit-return';
 import {freshAdventure,restoreAdventure,applyAdventure,signalReading,rockSamples,signalPoint,researchPoint,type AdventureAction,type AdventureState} from './moon-adventure';
 import {buildAdventureObjects} from './moon-adventure-scene';
 import {loadPackedModel} from './moon-model-loading';
@@ -122,10 +123,21 @@ export class MoonWorld{
  lock(){if(this.dead||this.displayLost||this.controlsPaused)return;if(this.mode!=='walk')return;const c=this.renderer.domElement;c.focus({preventScroll:true});try{const p=c.requestPointerLock();if(p)void p.catch(()=>this.notify());}catch{this.notify();}}
 
  private canEnterCockpit(){if(this.mode!=='walk'||this.driving||this.controlsPaused||this.surveying||this.target()?.[0]==='finish')return false;const f=this.camera.getWorldDirection(new T.Vector3()),p=this.camera.position;return atCockpitLadder(p.x,p.y,p.z,f.x,f.z);}
- private enterCockpit(){if(!this.canEnterCockpit())return;this.walkPose={position:this.camera.position.clone(),yaw:this.yaw,pitch:this.pitch};this.persistSession();this.keys.clear();this.sprint.reset();this.setControlsPaused(true);if(document.pointerLockElement===this.renderer.domElement)document.exitPointerLock();window.location.assign('/moon/cockpit/');}
+ private enterCockpit(){if(!this.canEnterCockpit())return;const p=this.camera.position;this.walkPose={position:p.clone(),yaw:this.yaw,pitch:this.pitch};this.persistSession();rememberCockpitReturn({x:p.x,y:p.y,z:p.z,yaw:this.yaw,pitch:this.pitch,fov:this.camera.fov});this.keys.clear();this.sprint.reset();this.setControlsPaused(true);if(document.pointerLockElement===this.renderer.domElement)document.exitPointerLock();window.location.assign('/moon/cockpit/');}
  private canObserve(){return this.mode==='walk'&&!this.driving&&!!this.telescope&&this.camera.position.distanceTo(this.telescope.position.clone().add(new T.Vector3(0,1.5,0)))<2.8;}
  private exitTelescope(){if(this.mode!=='telescope')return;this.telescope?.exit(this.camera);this.mode='walk';this.drag=false;this.keys.clear();this.sprint.reset();this.notify();}
- walk(){this.exitTelescope();if(this.driving)return;this.targetFov=this.camera.fov=64;this.camera.updateProjectionMatrix();this.mode='walk';this.orbit.enabled=false;if(this.walkPose){this.camera.position.copy(this.walkPose.position);this.yaw=this.walkPose.yaw;this.pitch=this.walkPose.pitch;}else{this.camera.position.set(0,1.78,13);this.yaw=0;this.pitch=0;}this.camera.rotation.set(this.pitch,this.yaw,0,'YXZ');this.lock();this.notify();}
+ walk(requestLock=true){this.exitTelescope();if(this.driving)return;this.targetFov=this.camera.fov=64;this.camera.updateProjectionMatrix();this.mode='walk';this.orbit.enabled=false;if(this.walkPose){this.camera.position.copy(this.walkPose.position);this.yaw=this.walkPose.yaw;this.pitch=this.walkPose.pitch;}else{this.camera.position.set(0,1.78,13);this.yaw=0;this.pitch=0;}this.camera.rotation.set(this.pitch,this.yaw,0,'YXZ');if(requestLock)this.lock();this.notify();}
+ resumeFromCockpit(){
+  if(!this.assetsReady)return;
+  const pose=takeCockpitReturn();
+  const valid=pose&&this.free(pose.x,pose.z);
+  if(valid)this.walkPose={position:new T.Vector3(pose.x,pose.y,pose.z),yaw:pose.yaw,pitch:pose.pitch};
+  // Older cockpit pages have no dedicated record; their existing autosave still
+  // supplies the boarding pose through restoreSession().
+  this.driving=false;this.roverGoal=null;this.setControlsPaused(false);this.walk(false);
+  if(valid){this.targetFov=this.camera.fov=pose.fov;this.camera.updateProjectionMatrix();}
+  this.renderer.domElement.focus({preventScroll:true});this.persistSession();this.notify();
+ }
  overview(){this.exitTelescope();if(this.driving&&!this.leaveRover())return;if(this.mode==='walk')this.walkPose={position:this.camera.position.clone(),yaw:this.yaw,pitch:this.pitch};this.targetFov=this.camera.fov=64;this.camera.updateProjectionMatrix();this.mode='overview';this.orbit.enabled=true;this.keys.clear();this.sprint.reset();if(document.pointerLockElement===this.renderer.domElement)document.exitPointerLock();this.camera.position.set(47,27,52);this.orbit.target.set(0,1,-3);this.orbit.update();this.notify();}
  private clearInteractionPath(target:T.Vector3,start=this.camera.position,allObstacles=false){
  // At walking eye height, opaque bulkheads block reach even when the target is nearby.
