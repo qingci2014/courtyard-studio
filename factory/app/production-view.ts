@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { ProductionTask } from './production-task';
+import { ProductionTask, REST } from './production-task';
 
 const named=(o:T.Object3D,prefix:string)=>o.children.filter(c=>c.name.replaceAll('_',' ').startsWith(prefix));
 /** Animates the exported Blender arm segments with a two-link IK solution. */
@@ -35,10 +35,10 @@ export class ProductionView{
   this.spark=new T.Mesh(new T.RingGeometry(.25,.28,40),new T.MeshBasicMaterial({color:0xe9b955,transparent:true,opacity:.7,side:T.DoubleSide}));this.spark.rotation.x=-Math.PI/2;this.spark.position.set(-4.45,1.68,-4.1);scene.add(this.spark);this.sync();
  }
  tick(dt:number,person?:T.Vector3){const v=this.task.vehicle;const blocked=!!person&&Math.hypot(person.x-v[0],person.z-v[2])<1.7;this.task.tick(dt,blocked);this.sync();}
- sync(){const t=this.task;this.vehicle.position.fromArray(t.vehicle);this.vehicle.rotation.y=t.yaw;const travel=this.lastVehicle.distanceTo(this.vehicle.position);this.wheelAngle+=travel/.22;this.lastVehicle.copy(this.vehicle.position);this.wheels.forEach(w=>{w.quaternion.copy(this.wheelRest.get(w)!).multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,0,1),this.wheelAngle));});
+ sync(){const t=this.task;this.vehicle.position.fromArray(t.vehicle);this.vehicle.rotation.y=t.yaw;const travel=this.lastVehicle.distanceTo(this.vehicle.position);this.wheelAngle+=travel/.22;this.lastVehicle.copy(this.vehicle.position);this.wheels.forEach(w=>{w.quaternion.copy(this.wheelRest.get(w)!).multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),this.wheelAngle));});
   this.cargo.position.fromArray(t.cargo);(this.cargo.material as T.MeshStandardMaterial).color.setHex(0xa6cedf);
   ((this.cargo.children[0] as T.Mesh).material as T.MeshStandardMaterial).color.setHex(t.processed?0x63cf9c:0xf7feff);
-  if(t.status==='idle')this.arm.reset();else this.arm.pose(new T.Vector3(...t.tool),t.closed);
+  if(t.status==='idle'||t.tool.every((v,i)=>Math.abs(v-REST[i])<1e-6))this.arm.reset();else this.arm.pose(new T.Vector3(...t.tool),t.closed);
   this.lift.visible=t.status!=='idle'&&[1,7].includes(t.stage);if(this.lift.visible){const deck=new T.Vector3(...t.deck),cargo=new T.Vector3(...t.cargo),end=cargo.clone().add(new T.Vector3(0,-.23,0)),start=new T.Vector3(deck.x,end.y,deck.z);this.forks.forEach((f,i)=>{f.position.copy(start).add(end).multiplyScalar(.5);f.position.x+=(i?1:-1)*.17;const dir=end.clone().sub(start);f.scale.z=Math.max(.5,dir.length());if(dir.length()>.01)f.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),dir.normalize());});this.posts.forEach((p,i)=>{p.position.set(deck.x+(i?1:-1)*.3,(.78+end.y)/2,deck.z);p.scale.y=Math.max(.05,end.y-.78);});}
   const index=t.driving?t.routeIndex:-1;if(index!==this.activeRoute){this.activeRoute=index;this.path.geometry.dispose();this.path.geometry=new T.BufferGeometry().setFromPoints(index>=0?t.routes[index].map(p=>new T.Vector3(p[0],.06,p[2])):[]);}
   this.path.visible=t.status!=='idle'&&t.status!=='done'&&index>=0;this.spark.visible=t.stage===4&&t.status!=='idle';this.spark.scale.setScalar(1+Math.sin(t.stageTime*4)*.12);

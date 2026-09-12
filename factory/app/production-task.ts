@@ -1,7 +1,7 @@
 export type Point=[number,number,number];
 export type Obstacle={id:string;x:number;z:number;hx:number;hz:number};
 export const HOME:Point=[6,0,-.5],SOURCE_DOCK:Point=[15,0,-1.5],CELL_DOCK:Point=[-6,0,-2],FINISH_DOCK:Point=[15,0,3];
-export const SOURCE:Point=[14.57,1.57,-3.12],FINISH:Point=[14.57,1.57,5.58],WORK:Point=[-4.45,1.45,-4.1],REST:Point=[-4.62,2,-4.1];
+export const SOURCE:Point=[14.57,1.57,-3.12],FINISH:Point=[14.57,1.57,5.58],WORK:Point=[-4.45,1.45,-4.1],REST:Point=[-4.62,2.11,-4.1];
 export const TITLES=['前往原料位','装载原料','运输至装配线','机械臂取件','执行装配','机械臂装车','运输至成品位','卸下成品','返回待命点'];
 export function route(from:Point,to:Point,obstacles:Obstacle[]):Point[]{
  const step=.25,key=(x:number,z:number)=>`${x},${z}`,start=[Math.round(from[0]/step),Math.round(from[2]/step)],end=[Math.round(to[0]/step),Math.round(to[2]/step)];
