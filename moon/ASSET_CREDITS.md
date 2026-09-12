@@ -33,4 +33,6 @@ The field exploration structures and the refined cabin furnishings, display geom
 
 - Gameplay sound effects: original procedural Web Audio synthesis in app/moon-audio.ts. No purchased/downloaded samples and no microphone capture.
 
+- Cockpit background piano: user-supplied `moon2.mp3`, converted to `content/audio/moon2.m4a` for web delivery. This is a separate supplied music asset, not part of the procedural sound effects.
+
 - Indoor companion: original Blender geometry built from the user-provided visual reference; editable source model-source/moon/companion.blend and generator build-companion.py. No downloaded or purchased robot model.

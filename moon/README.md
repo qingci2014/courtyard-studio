@@ -18,3 +18,13 @@ assets download in parallel. The model transfer is 8,136,387 bytes and the
 window textures total 2,163,054 bytes for this revision (previous combined
 assets: 27,223,088 bytes). Editable source and the texture optimizer are in the
 `selene-lunar` authoring workspace.
+
+Cockpit music uses the user-supplied `moon2` track, encoded as stereo AAC at
+96 kbps in a fast-start M4A (2,486,200 bytes, 203.173 seconds). The original
+MP3 is retained outside the public bundle. Re-encode with
+`ffmpeg -i moon2.mp3 -map 0:a:0 -vn -c:a aac -b:a 96k -movflags +faststart -map_metadata -1 moon2.m4a`.
+The audio element receives no source until the cockpit has rendered. Each visit
+defaults to playback, remembers only volume, loops the track, and pauses when
+hidden or leaving the cockpit. Browsers that block audible autoplay resume on
+the first cockpit interaction or the play button. The controls are CSS/SVG
+hardware-style keys; no interface bitmap assets are loaded.
