@@ -27,7 +27,7 @@ export class ProductionView{
  constructor(private scene:T.Scene,private objects:Map<string,T.Object3D>,obstacles:ConstructorParameters<typeof ProductionTask>[0]){
   this.task=new ProductionTask(obstacles);this.vehicle=objects.get('AGV-03')!;this.arm=new AssemblyArm(objects.get('RB-02')!);this.wheels=[...named(this.vehicle,'Drive wheel'),...named(this.vehicle,'Wheel hub')];this.wheels.forEach(w=>this.wheelRest.set(w,w.quaternion.clone()));this.lastVehicle=this.vehicle.position.clone();
   for(const ob of [...named(this.vehicle,'Load tote'),...named(this.vehicle,'Marking AGV'),...named(objects.get('CV-02')!,'Material tray')]){this.changed.push(ob);ob.visible=false;}
-  this.cargo=new T.Mesh(new RoundedBoxGeometry(.44,.4,.44,2,.025),new T.MeshStandardMaterial({color:0xd99434,metalness:.4,roughness:.28}));this.cargo.castShadow=true;this.cargo.userData.workpieceId='W-001';scene.add(this.cargo);
+  this.cargo=new T.Mesh(new RoundedBoxGeometry(.44,.4,.44,2,.025),new T.MeshStandardMaterial({color:0xa6cedf,metalness:.4,roughness:.28}));this.cargo.castShadow=true;this.cargo.userData.workpieceId='W-001';scene.add(this.cargo);
   const strap=new T.Mesh(new T.BoxGeometry(.455,.045,.455),new T.MeshStandardMaterial({color:0xf7feff,metalness:.4,roughness:.3}));strap.position.y=.065;this.cargo.add(strap);
   this.path=new T.Line(new T.BufferGeometry(),new T.LineBasicMaterial({color:0xc8852e,transparent:true,opacity:.7}));scene.add(this.path);
   const metal=new T.MeshStandardMaterial({color:0xb1c4cd,metalness:.7,roughness:.3});
@@ -36,7 +36,8 @@ export class ProductionView{
  }
  tick(dt:number,person?:T.Vector3){const v=this.task.vehicle;const blocked=!!person&&Math.hypot(person.x-v[0],person.z-v[2])<1.7;this.task.tick(dt,blocked);this.sync();}
  sync(){const t=this.task;this.vehicle.position.fromArray(t.vehicle);this.vehicle.rotation.y=t.yaw;const travel=this.lastVehicle.distanceTo(this.vehicle.position);this.wheelAngle+=travel/.22;this.lastVehicle.copy(this.vehicle.position);this.wheels.forEach(w=>{w.quaternion.copy(this.wheelRest.get(w)!).multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,0,1),this.wheelAngle));});
-  this.cargo.position.fromArray(t.cargo);(this.cargo.material as T.MeshStandardMaterial).color.setHex(t.processed?0x63cf9c:0xd99434);
+  this.cargo.position.fromArray(t.cargo);(this.cargo.material as T.MeshStandardMaterial).color.setHex(0xa6cedf);
+  ((this.cargo.children[0] as T.Mesh).material as T.MeshStandardMaterial).color.setHex(t.processed?0x63cf9c:0xf7feff);
   if(t.status==='idle')this.arm.reset();else this.arm.pose(new T.Vector3(...t.tool),t.closed);
   this.lift.visible=t.status!=='idle'&&[1,7].includes(t.stage);if(this.lift.visible){const deck=new T.Vector3(...t.deck),cargo=new T.Vector3(...t.cargo),end=cargo.clone().add(new T.Vector3(0,-.23,0)),start=new T.Vector3(deck.x,end.y,deck.z);this.forks.forEach((f,i)=>{f.position.copy(start).add(end).multiplyScalar(.5);f.position.x+=(i?1:-1)*.17;const dir=end.clone().sub(start);f.scale.z=Math.max(.5,dir.length());if(dir.length()>.01)f.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),dir.normalize());});this.posts.forEach((p,i)=>{p.position.set(deck.x+(i?1:-1)*.3,(.78+end.y)/2,deck.z);p.scale.y=Math.max(.05,end.y-.78);});}
   const index=t.driving?t.routeIndex:-1;if(index!==this.activeRoute){this.activeRoute=index;this.path.geometry.dispose();this.path.geometry=new T.BufferGeometry().setFromPoints(index>=0?t.routes[index].map(p=>new T.Vector3(p[0],.06,p[2])):[]);}

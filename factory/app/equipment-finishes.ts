@@ -6,9 +6,10 @@ export function applyEquipmentFinishes(root:Object3D){
   const name=object.name.replaceAll('_',' ');
   const whiteBase=['Machine plinth','Inspection cabinet','Packing enclosure'].some(prefix=>name.startsWith(prefix));
   const charging=name.startsWith('Charging dock');
-  if(!whiteBase&&!charging)return;
+  const stock=['Material tray','Parts container','Load tote','Finished parts tote','Inspection sample','Packed goods'].some(prefix=>name.startsWith(prefix));
+  if(!whiteBase&&!charging&&!stock)return;
   const original=Array.isArray(object.material)?object.material:[object.material];
-  const materials=original.map(material=>{const copy=material.clone();if(copy instanceof MeshStandardMaterial){copy.color.setHex(charging?0xa6cedf:0xe3e7e2);copy.metalness=.08;copy.roughness=.65;}return copy;});
+  const materials=original.map(material=>{const copy=material.clone();if(copy instanceof MeshStandardMaterial){copy.color.setHex((charging||stock)?0xa6cedf:0xe3e7e2);copy.metalness=.08;copy.roughness=.65;}return copy;});
   object.material=Array.isArray(object.material)?materials:materials[0];
  });
 }
