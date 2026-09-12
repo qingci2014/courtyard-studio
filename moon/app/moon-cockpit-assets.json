@@ -1,0 +1,10 @@
+{
+  "model": "cockpit.glb?v=5198515c1ae1",
+  "packed": "cockpit-packed.bin?v=5f3e2262b56e",
+  "textures": [
+    "cockpit-textures/moon_diffuse.webp?v=db7b5d0ef826",
+    "cockpit-textures/moon_nor_gl.webp?v=902dc7d9f7bd",
+    "cockpit-textures/moon_rough.webp?v=c8c685af6f38",
+    "cockpit-textures/earth.webp?v=5729a3e7db92"
+  ]
+}

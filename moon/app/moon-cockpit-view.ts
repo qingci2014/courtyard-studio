@@ -1,5 +1,6 @@
 import * as T from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {loadCockpitModel} from './moon-cockpit-loading';
+import assets from './moon-cockpit-assets.json';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
@@ -12,7 +13,7 @@ import {batchMoonStatics} from './moon-batching';
 export class CockpitView{
  readonly ready:Promise<void>;private renderer:T.WebGLRenderer;private scene=new T.Scene();private camera=new T.PerspectiveCamera(64,1,.035,1600);private controls:OrbitControls;private observer:ResizeObserver;private dead=false;private seated=true;private yaw=0;private pitch=-.1;private pointer:{x:number;y:number}|null=null;private signal=new AbortController();
  private composer:EffectComposer;private ao:GTAOPass;private bloom:UnrealBloomPass;private output:OutputPass;private opticalSurfaces:T.Object3D[]=[];private dirty=true;
- constructor(private host:HTMLElement){
+ constructor(private host:HTMLElement,private report:(text:string)=>void=()=>{}){
  this.renderer=new T.WebGLRenderer({antialias:true});this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.10;this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=T.PCFSoftShadowMap;host.appendChild(this.renderer.domElement);this.scene.background=new T.Color('#010204');
  this.controls=new OrbitControls(this.camera,this.renderer.domElement);this.controls.enablePan=false;this.controls.minDistance=.4;this.controls.maxDistance=1.8;this.controls.minPolarAngle=.3;this.controls.maxPolarAngle=1.83;this.controls.enabled=false;
  const env=new RoomEnvironment(),pm=new T.PMREMGenerator(this.renderer);this.scene.environment=pm.fromScene(env,.08).texture;this.scene.environmentIntensity=.12;env.dispose();pm.dispose();this.scene.add(new T.HemisphereLight(0xc2d4e5,0x303942,.08));
@@ -35,13 +36,30 @@ export class CockpitView{
  canvas.addEventListener('wheel',()=>{this.dirty=true;},{signal:this.signal.signal});document.addEventListener('visibilitychange',()=>{this.dirty=true;},{signal:this.signal.signal});
  this.ready=this.load();this.renderer.setAnimationLoop(()=>{if(!this.dead&&!document.hidden){if(!this.seated)this.controls.update();if(this.dirty){this.composer.render();this.dirty=false;}}});
  }
- private async load(){const model=await new GLTFLoader().loadAsync('/moon/content/cockpit.glb');if(this.dead){this.release(model.scene);return;}model.scene.traverse(o=>{if(o instanceof T.Mesh){if(o.userData.surfaceLabel)o.userData.glazing=true;if(o.userData.glazing)this.opticalSurfaces.push(o);o.castShadow=!o.userData.glazing;o.receiveShadow=!o.userData.glazing;for(const material of Array.isArray(o.material)?o.material:[o.material]){if(material instanceof T.MeshStandardMaterial){for(const key of ['map','normalMap','roughnessMap'] as const){const tex=material[key];if(tex)tex.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());}if(o.userData.surfaceLabel){material.depthWrite=false;material.polygonOffset=true;material.polygonOffsetFactor=-1;material.polygonOffsetUnits=-1;}}}}});batchMoonStatics(model.scene);this.scene.add(model.scene);this.dirty=true;
- const loader=new T.TextureLoader();const groundTextures=await Promise.all(['/moon/content/textures/moon_diffuse.jpg','/moon/content/textures/moon_nor_gl.jpg','/moon/content/textures/moon_rough.jpg'].map(path=>loader.loadAsync(path)));if(this.dead){groundTextures.forEach(t=>t.dispose());return;}const [ground,normal,rough]=groundTextures;ground.colorSpace=T.SRGBColorSpace;for(const texture of groundTextures){texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(70,70);texture.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());}
+ private async load(){
+ const content='/moon/content/',loader=new T.TextureLoader();
+ // Fetch the cabin and window scenery together instead of three serial stages.
+ const [modelResult,...textureResults]=await Promise.allSettled([
+  loadCockpitModel(content+assets.packed,content+assets.model,this.signal.signal,this.report),
+  ...assets.textures.map(path=>loader.loadAsync(content+path)),
+ ] as const);
+ const textures=textureResults.flatMap(result=>result.status==='fulfilled'?[result.value]:[]);
+ const failure=textureResults.find(result=>result.status==='rejected');
+ if(this.dead||modelResult.status==='rejected'||failure){
+  textures.forEach(texture=>texture.dispose());
+  if(modelResult.status==='fulfilled')this.release(modelResult.value.scene);
+  if(!this.dead)throw modelResult.status==='rejected'?modelResult.reason:failure?.reason;
+  return;
+ }
+ this.report('正在准备驾驶舱画面…');
+ const model=modelResult.value;
+ model.scene.traverse(o=>{if(o instanceof T.Mesh){if(o.userData.surfaceLabel)o.userData.glazing=true;if(o.userData.glazing)this.opticalSurfaces.push(o);o.castShadow=!o.userData.glazing;o.receiveShadow=!o.userData.glazing;for(const material of Array.isArray(o.material)?o.material:[o.material]){if(material instanceof T.MeshStandardMaterial){for(const key of ['map','normalMap','roughnessMap'] as const){const tex=material[key];if(tex)tex.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());}if(o.userData.surfaceLabel){material.depthWrite=false;material.polygonOffset=true;material.polygonOffsetFactor=-1;material.polygonOffsetUnits=-1;}}}}});batchMoonStatics(model.scene);this.scene.add(model.scene);this.dirty=true;
+ const [ground,normal,rough,earthTex]=textures;ground.colorSpace=T.SRGBColorSpace;for(const texture of [ground,normal,rough]){texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(70,70);texture.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());}
  const geometry=new T.PlaneGeometry(900,900,240,240);geometry.rotateX(-Math.PI/2);const pos=geometry.attributes.position;
  const craters=[[-48,90,27,6],[48,115,32,8],[105,180,48,12],[-132,235,60,15],[8,240,66,14]];
  for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i),r=Math.hypot(x,z),fade=T.MathUtils.smoothstep(r,18,65);let y=-4+T.MathUtils.smoothstep(r,40,210)*(11+8*Math.sin(x*.021)*Math.cos(z*.016));y+=fade*(1.2*Math.sin(x*.14+Math.cos(z*.08))*Math.cos(z*.13)+.4*Math.sin(x*.38+z*.19));for(const [cx,cz,radius,depth] of craters){const d=Math.hypot(x-cx,z-cz)/radius;if(d<1.7)y+=fade*depth*(.4*Math.exp(-Math.pow((d-1)/.13,2))-.68*Math.exp(-Math.pow(d/.73,4)));}pos.setY(i,y);}
  geometry.computeVertexNormals();const surface=new T.Mesh(geometry,new T.MeshStandardMaterial({map:ground,normalMap:normal,normalScale:new T.Vector2(.7,.7),roughnessMap:rough,color:0x878d93,roughness:1}));surface.receiveShadow=true;this.scene.add(surface);this.dirty=true;
- const earthTex=await loader.loadAsync('/moon/content/textures/earth.jpg');if(this.dead){earthTex.dispose();return;}earthTex.colorSpace=T.SRGBColorSpace;const earth=new T.Mesh(new T.SphereGeometry(17,48,32),new T.MeshStandardMaterial({map:earthTex,roughness:1,emissive:0x293c59,emissiveIntensity:.3}));earth.position.set(-200,135,420);this.scene.add(earth);this.dirty=true;
+ earthTex.colorSpace=T.SRGBColorSpace;const earth=new T.Mesh(new T.SphereGeometry(17,48,32),new T.MeshStandardMaterial({map:earthTex,roughness:1,emissive:0x293c59,emissiveIntensity:.3}));earth.position.set(-200,135,420);this.scene.add(earth);this.dirty=true;
  }
  private pose(){this.camera.rotation.order='YXZ';this.camera.rotation.set(this.pitch,Math.PI+this.yaw,0);this.dirty=true;}
  view(seat:boolean){this.seated=seat;this.pointer=null;this.controls.enabled=!seat;this.camera.fov=seat?64:68;this.camera.updateProjectionMatrix();if(seat){this.camera.position.set(0,1.53,-.45);this.yaw=0;this.pitch=-.10;this.pose();}else{this.camera.position.set(-1.25,1.66,-1.05);this.controls.target.set(0,1.1,0);this.controls.update();}this.dirty=true;}
