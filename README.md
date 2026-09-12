@@ -81,3 +81,11 @@ public/vision 包含完整模型和 SIMD / 非 SIMD WASM 回退。首次加载�
 - 小幅抖动平滑处理；闭合确认约 80ms，张开确认约 200ms，降低误掉落。
 - 接近投放区后提示松开，并辅助对准中心；远离目标区释放仍正常放回桌面。
 - 自动测试覆盖 16 个场景；实际摄像头手感需结合设备和光线试用。
+
+## 白境车间 /factory
+
+工厂入口：https://studio.qingci.store/factory/ 。独立构建目录为 `factory`，不修改首页或 `/moon`。场景资源在 `/factory/models/`，DeepSeek 服务接口为 `/factory/api/command`，复用本项目的 `WORKSHOP_MODEL_*` 服务器环境变量。未配置模型时仍可使用快捷指令。
+
+工厂来源：qingci2014/white-workshop，导入版本 c82596c5647ee8b46bd41205171fee26eb9c53ce。该独立源码仓库继续保留，当前腾讯云部署从本仓库构建。
+
+验证：`node scripts/verify-factory.mjs`（先构建），检查原有入口、资源路径、前端无密钥以及边缘函数入口。

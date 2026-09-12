@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/pack-moon-model.mjs && tsc --noEmit && vite build && vite build --config vite.moon.config.ts && node scripts/finish-moon.mjs",
+    "build": "node scripts/pack-moon-model.mjs && tsc --noEmit && vite build && vite build --config vite.moon.config.ts && node scripts/finish-moon.mjs && vite build --config vite.factory.config.ts",
     "preview": "vite preview",
     "test": "vitest run"
   },
