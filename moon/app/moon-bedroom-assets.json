@@ -1,0 +1,12 @@
+{
+  "model": "bedroom.glb?v=da83956a68ac",
+  "packed": "bedroom-packed.bin?v=5fc2df7b25d7",
+  "lighting": {
+    "encoding": "srgb-scaled-irradiance",
+    "gain": 4,
+    "uvChannel": 1,
+    "resolution": 4096,
+    "modelSha256": "da83956a68ac21473c258fe9a21d4187ef37b8630933a84daf94d3a18dd4a46f",
+    "file": "bedroom-lighting.webp?v=05438819738f"
+  }
+}

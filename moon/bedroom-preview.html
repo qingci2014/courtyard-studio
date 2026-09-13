@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SELENE · 卧室本地预览</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#141719;color:#e6e5df;font:13px/1.5 system-ui,sans-serif}#room{position:fixed;inset:0}#loading{position:fixed;inset:0;display:grid;place-content:center;background:#111a1f;z-index:5;text-align:center}#loading strong{font-size:22px;font-weight:500;letter-spacing:.25em}#loading p{color:#99aeb4}#toolbar{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:7px;background:#152025dc;backdrop-filter:blur(16px);border:1px solid #91a5ac55;border-radius:8px;box-shadow:0 8px 30px #0003;white-space:nowrap}button{font:inherit;border:0;border-radius:4px;color:#bccacd;padding:8px 12px;background:transparent;cursor:pointer}button[aria-pressed=true]{background:#52676580;color:#fff3d9}button:hover{background:#62798066;color:white}.divider{height:20px;width:1px;background:#65808966;margin:0 4px}#caption{position:fixed;top:21px;left:25px;margin:0;color:#fff9e9;text-shadow:0 1px 9px #0007;font-size:12px;letter-spacing:.12em;pointer-events:none}#hint{position:fixed;bottom:3px;left:50%;transform:translateX(-50%);margin:0;font-size:10px;color:#d7e1e3;text-shadow:0 1px 5px #000}#restore{display:none;position:fixed;bottom:14px;right:14px;background:#152025d9}@media(max-width:780px){#toolbar{max-width:96vw;overflow-x:auto;left:2vw;transform:none}button{padding:7px 8px;font-size:12px}#hint{display:none}}
+@media(max-aspect-ratio:4/3){#room{top:50%;bottom:auto;transform:translateY(-50%);height:75vw}#caption{top:calc(50% - 37.5vw - 35px)}#toolbar{bottom:calc(50% - 37.5vw - 62px)}#hint{display:none}}
+</style></head><body><main id="room"></main><div id="loading"><strong>SELENE · CREW HABITAT</strong><p id="progress">正在准备卧室</p></div><p id="caption">卧室 · 本地实景预览</p><nav id="toolbar" aria-label="预览角度"></nav><p id="hint">拖动画面环视 · 滚轮缩放 · W / A / S / D 走动</p><button id="restore">显示视角选择</button>
+<script type="module">
+import {MoonWorld} from './app/moon-world.ts';import * as T from 'three';
+const progress=document.querySelector('#progress'),toolbar=document.querySelector('#toolbar');
+const world=new MoonWorld(document.querySelector('#room'),{update(){},message(){},loading(text){progress.textContent=text},displayError(text){if(text){const loading=document.querySelector('#loading');if(loading){loading.hidden=false;progress.textContent=text}else document.querySelector('#caption').textContent=text}}});
+const views={
+ '全景':[[-.25,1.95,-25.40],[.15,1.53,-30.0]],
+ '床铺':[[.12,1.95,-28.0],[-2.42,1.1,-29.9]],
+ '床沿近景':[[-.45,1.45,-28.35],[-1.48,.60,-29.5]],
+ '地毯':[[.82,1.7,-27.0],[.02,.24,-29.6]],
+ '床头':[[.20,1.95,-29.2],[-1.95,1.83,-31.0]],
+ '工作台':[[-.35,1.95,-27.65],[3.45,1.75,-29.3]],
+ '衣柜':[[.15,1.95,-24.6],[3.14,1.9,-25.8]],
+ '入口':[[.1,1.95,-21.9],[0,1.60,-27.9]],
+ '向外看':[[0,1.95,-25.65],[0,1.58,-17.2]],
+ '空置角落':[[.8,1.95,-24.25],[3.4,1.25,-22.8]]
+};
+function view(name){const [p,t]=views[name];world.mode='walk';world.orbit.enabled=false;world.camera.position.set(...p);world.camera.lookAt(new T.Vector3(...t));world.camera.rotation.order='YXZ';world.yaw=world.camera.rotation.y;world.pitch=world.camera.rotation.x;world.targetFov=64;world.setControlsPaused(false);for(const b of toolbar.querySelectorAll('[data-view]'))b.setAttribute('aria-pressed',String(b.textContent===name));}
+for(const name of Object.keys(views)){const button=document.createElement('button');button.textContent=name;button.dataset.view='';button.setAttribute('aria-pressed','false');button.onclick=()=>view(name);toolbar.append(button)}
+const divider=document.createElement('span');divider.className='divider';toolbar.append(divider);
+const off=document.createElement('button');off.textContent='关灯';off.onclick=()=>{world.state.powered=!world.state.powered;off.textContent=world.state.powered?'关灯':'开灯'};toolbar.append(off);
+const expand=document.createElement('button');expand.textContent='放大';expand.onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{})};toolbar.append(expand);
+const clean=document.createElement('button');clean.textContent='纯画面';clean.onclick=()=>{toolbar.style.display='none';document.querySelector('#caption').hidden=true;document.querySelector('#hint').hidden=true;document.querySelector('#restore').style.display='block'};toolbar.append(clean);
+document.querySelector('#restore').onclick=()=>{toolbar.style.display='flex';document.querySelector('#caption').hidden=false;document.querySelector('#hint').hidden=false;document.querySelector('#restore').style.display='none'};
+try{await world.ready;world.state={powered:true,doorOpen:true,carrying:false,complete:false,solarRepaired:true,waterOnline:true,commsOnline:true};view('全景');document.querySelector('#loading').remove()}catch(e){progress.textContent='加载失败，请刷新重试：'+e.message}
+</script></body></html>

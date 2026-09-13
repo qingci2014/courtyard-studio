@@ -27,6 +27,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Authored models
 
+The warm bedroom insert (`content/bedroom.glb`) is original geometry and procedural
+PBR textile/paint maps authored in Blender from the user's supplied room-style
+reference. The duvet and throw use settled Blender cloth; the thin rug is one
+closed mesh with woven material bands. The pillows, cabinetry, recessed niches, foliage and light
+fittings are geometry. The wardrobe garments use an original AI-generated
+RGBA photographic clothing asset on shallow curved surfaces; see
+`model-source/moon/BEDROOM_ASSETS.md` for the asset and exact generation prompt.
+Source: `model-source/moon/build-bedroom.py` in courtyard-studio. The reference
+image is not included in the public assets. No paid or downloaded furnishings
+were used. Live bedroom screens and touch surfaces are original canvas artwork.
+The bedroom's light atlas is rendered from this geometry in Blender Cycles and
+denoised as lighting data; it is not a photo of the reference room.
+
 The research habitat, living quarters and furnishings, greenhouse and curved foliage, rover, solar arrays, communications equipment, drilling station, service bay, crew lander, cargo and power station are authored in Blender for this project. Source: model-source/moon/build_base.py, its companion Python modules and selene-base.blend. No paid asset was used for these objects.
 
 The field exploration structures and the refined cabin furnishings, display geometry, lighting channels and materials were authored for SELENE in code/Blender. No additional paid assets were purchased for this iteration.
