@@ -1,0 +1,295 @@
+/* Fixed-size frame corners; only the edges and glass centre may stretch. */
+.moon-cinematic {
+  --panel-safe: clamp(12px, 2.5vmin, 28px);
+  --frame-width: 32px;
+}
+.moon-cinematic .moon-modal-layer { padding: var(--panel-safe); }
+.moon-cinematic :is(.moon-mission-terminal, .moon-expedition, .moon-comms, .moon-calibration > div) {
+  box-sizing: border-box;
+  border: var(--frame-width) solid transparent;
+  border-image-source: var(--terminal);
+  border-image-slice: 100 fill;
+  border-image-width: var(--frame-width);
+  border-image-repeat: stretch;
+  background: none;
+  border-radius: 0;
+  padding: 4px 12px 12px;
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
+}
+.moon-cinematic .moon-mission-terminal {
+  width: min(1420px, 100%);
+  height: min(900px, 100%);
+  max-width: 100%;
+  max-height: 100%;
+}
+.moon-cinematic .moon-terminal-header {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 24px;
+  min-height: 64px;
+  padding: 0 6px 8px;
+}
+.moon-cinematic .moon-archive-tabs {
+  flex: 1;
+  flex-basis: auto;
+  align-items: center;
+  justify-content: flex-start;
+  order: 0;
+  gap: 32px;
+}
+.moon-cinematic .moon-archive-tabs button {
+  font-size: 16px;
+  padding: 15px 0;
+}
+.moon-cinematic .moon-terminal-close { order: 0; flex-shrink: 0; padding: 4px; }
+.moon-cinematic .moon-terminal-close kbd { padding: 6px 9px; }
+.moon-cinematic .moon-terminal-body {
+  padding-top: 20px;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  scroll-padding-block: 16px;
+}
+.moon-cinematic .moon-terminal-body.is-archives { padding-top: 0; }
+.moon-cinematic .moon-archive-reader { padding-right: 12px; scrollbar-gutter: stable; }
+.moon-cinematic .moon-expedition {
+  top: var(--panel-safe);
+  bottom: var(--panel-safe);
+  right: var(--panel-safe);
+  width: min(700px, calc(100% - var(--panel-safe) * 2));
+  max-height: calc(100% - var(--panel-safe) * 2);
+  display: flex;
+  flex-direction: column;
+}
+.moon-cinematic .moon-expedition > header {
+  flex-shrink: 0;
+  padding: 8px 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.moon-cinematic .moon-expedition > header h2 { font-size: 24px; margin-bottom: 2px; }
+.moon-cinematic .moon-expedition > header > button { flex-shrink: 0; font-size: 25px; padding: 7px; }
+.moon-cinematic .moon-expedition-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 12px 24px 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #5e7784 transparent;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  scroll-padding-block: 16px;
+}
+.moon-cinematic .moon-expedition .moon-map { width: min(100%, 500px); height: auto; margin: 16px auto; }
+.moon-cinematic .moon-comms {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 110px);
+}
+.moon-cinematic .moon-comms > header { flex-shrink: 0; padding: 8px 6px 14px; border-bottom: 1px solid var(--line); }
+.moon-cinematic .moon-comms-body { min-height: 0; overflow: auto; padding: 0 6px 8px; scrollbar-width: thin; }
+.moon-cinematic .moon-comms-body > p { white-space: pre-wrap; font-size: 15px; line-height: 1.9; color: #d2dfe6; }
+.moon-cinematic .moon-comms-body > small { font-size: 12px; line-height: 1.9; color: #9db6c3; }
+.moon-cinematic .moon-calibration > div {
+  display: flex;
+  flex-direction: column;
+  width: min(610px, calc(100vw - var(--panel-safe) * 2));
+  max-height: calc(100dvh - var(--panel-safe) * 2);
+  padding-top: 25px;
+}
+.moon-cinematic .moon-calibration-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 0 10px 18px;
+  scrollbar-width: thin;
+  scrollbar-color: #5e7784 transparent;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+.moon-cinematic .moon-calibration-close { top: 0; right: 6px; z-index: 2; }
+
+/* Each HUD casing has a constant corner cut and a separate dark glass surface. */
+.moon-cinematic .moon-hud-panel {
+  --hud-cut: 12px;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(145deg, #93a8ad, #283c47 14%, #33434b 75%, #75868c);
+  clip-path: polygon(var(--hud-cut) 0, 100% 0, 100% calc(100% - var(--hud-cut)), calc(100% - var(--hud-cut)) 100%, 0 100%, 0 var(--hud-cut));
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.moon-cinematic .moon-hud-panel::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  z-index: -2;
+  clip-path: inherit;
+  background: linear-gradient(120deg, #17252cee, #0b141cf5 55%, #0c1923f2);
+}
+.moon-cinematic .moon-hud-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(90deg, #b4e7f2, #7fabb8) left 20px top 0 / 42px 2px no-repeat,
+    linear-gradient(#a2bdc4, #a2bdc4) right 0 bottom 22px / 2px 17px no-repeat,
+    repeating-linear-gradient(90deg, #9fb7bf70 0 1px, transparent 1px 5px) right 22px bottom 5px / 26px 3px no-repeat;
+}
+.moon-cinematic .moon-top { padding: 22px 28px; justify-content: flex-end; background: none; }
+.moon-cinematic .moon-systems {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  max-width: none;
+  gap: 3px;
+  padding: 7px 10px 7px 17px;
+  font-size: 12px;
+  color: #c0d5df;
+  text-shadow: none;
+}
+.moon-cinematic .moon-power-state { display: flex; align-items: center; gap: 8px; padding-right: 12px; color: #99acb7; }
+.moon-cinematic .moon-power-state svg { stroke-width: 1.6; }
+.moon-cinematic .moon-power-state.is-online { color: #c1e5e9; }
+.moon-cinematic .moon-systems button {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  margin: 0;
+  border: 0;
+  border-left: 1px solid #a2bdc02b;
+}
+.moon-cinematic .moon-status-stack { top: 103px; right: 28px; width: 224px; }
+.moon-cinematic .moon-signal-card { position: relative; display: block; padding: 16px 19px 15px; text-shadow: none; }
+.moon-cinematic .moon-signal-heading { display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 2px; color: #a9c0cd; }
+.moon-cinematic .moon-signal-heading i { width: 4px; height: 4px; background: #bce6ef; border-radius: 50%; margin-left: auto; box-shadow: 0 0 6px #9de2ef90; }
+.moon-cinematic .moon-signal-reading { display: flex; align-items: center; gap: 19px; margin: 12px 0 8px; }
+.moon-cinematic .moon-signal-reading strong { display: block; margin: 0; font: 34px Consolas, monospace; color: #dfedf2; }
+.moon-cinematic .moon-signal-reading strong small { display: inline; margin-left: 3px; font-size: 12px; color: #b0c5d0; }
+.moon-cinematic .moon-signal-reading > span { font-size: 13px; color: #d5e2e9; }
+.moon-cinematic .moon-signal-reading > span > small { display: block; margin-top: 7px; font-size: 11px; color: #809caa; }
+.moon-cinematic .moon-signal-card .moon-radio-wave { width: 100%; height: 22px; opacity: .75; }
+.moon-cinematic .moon-objective { width: 352px; left: 28px; bottom: 95px; padding: 18px 21px 16px; }
+.moon-cinematic .moon-hud-task-heading { display: flex; gap: 12px; align-items: center; }
+.moon-cinematic .moon-hud-step { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #98bccc78; background: #29435165; font: 17px Consolas, monospace; color: #ceeef5; }
+.moon-cinematic .moon-hud-task-heading > div { display: grid; gap: 5px; }
+.moon-cinematic .moon-hud-task-heading small { font-size: 10px; letter-spacing: 1px; color: #9bb7c4; }
+.moon-cinematic .moon-hud-task-heading > div > span { font-size: 12px; letter-spacing: 1px; color: #c7d8e2; }
+.moon-cinematic .moon-hud-task-heading > b { float: none; margin-left: auto; font: 14px Consolas, monospace; color: #d3eaf3; }
+.moon-cinematic .moon-hud-task-heading > b > small { font: 11px Consolas, monospace; }
+.moon-cinematic .moon-objective h2 { margin: 15px 0 13px; font-size: 16px; line-height: 1.7; color: #e5eef2; font-weight: 500; letter-spacing: .5px; }
+.moon-cinematic .moon-hud-mission-progress { display: flex; gap: 4px; margin: 0 0 13px; }
+.moon-cinematic .moon-hud-mission-progress i { flex: 1; height: 2px; background: #c6dae528; }
+.moon-cinematic .moon-hud-mission-progress .is-done { background: #708f8a; }
+.moon-cinematic .moon-hud-mission-progress .is-current { background: #d0eef7; height: 3px; box-shadow: 0 0 5px #a3ddea65; }
+.moon-cinematic .moon-objective p { font-size: 11px; color: #8fa5b2; }
+.moon-cinematic .moon-objective p em { font: 14px Consolas, monospace; color: #c6e3ef; }
+.moon-cinematic .moon-objective p em span { color: #8fa5b2; font-size: 10px; }
+.moon-cinematic .moon-actions { padding: 9px 13px; right: 28px; bottom: 23px; gap: 0; }
+.moon-cinematic .moon-actions button { padding: 9px 13px; gap: 8px; font-size: 12px; letter-spacing: .5px; text-shadow: none; }
+.moon-cinematic .moon-actions button + button { border-left: 1px solid #a6c3ce29; }
+.moon-cinematic .moon-actions button:hover { box-shadow: inset 0 -1px #b8e7ef; background: #9ac3cd12; }
+.moon-cinematic .moon-actions svg { stroke-width: 1.45; }
+.moon-cinematic .moon-actions kbd { font: 10px Consolas, monospace; color: #8da6b5; margin-left: 1px; }
+.moon-cinematic .moon-help { bottom: 94px; right: 28px; }
+.moon-cinematic .moon-guide { left: 28px; bottom: 320px; max-height: calc(100dvh - 425px); }
+
+/* Current objective first, separate future steps, compact completed reports. */
+.moon-cinematic .moon-journal-content { max-width: 1120px; padding: 0 12px 16px; }
+.moon-cinematic .moon-mission-summary { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 22px; }
+.moon-cinematic .moon-mission-summary small { color: #91a6b2; font-size: 11px; letter-spacing: 2px; }
+.moon-cinematic .moon-mission-summary h2 { font-size: 23px; font-weight: 450; letter-spacing: 2px; margin: 8px 0 0; }
+.moon-cinematic .moon-mission-progress { width: 210px; text-align: right; font-size: 12px; color: #8fa9b7; }
+.moon-cinematic .moon-mission-progress b { color: #d1e6ee; font: 21px Consolas, monospace; }
+.moon-cinematic .moon-mission-progress progress { display: block; width: 100%; height: 3px; margin-top: 10px; accent-color: #a9d8e4; border: 0; }
+.moon-cinematic .moon-mission-progress progress::-webkit-progress-bar { background: #98bac422; }
+.moon-cinematic .moon-mission-progress progress::-webkit-progress-value { background: #a9d8e4; }
+.moon-cinematic .moon-current-mission { border: 1px solid #a3c9d553; border-left: 3px solid #c1e9f4; padding: 21px 25px; background: linear-gradient(110deg, #3150646e, #182b3730); box-shadow: inset 0 1px #d5eff719; }
+.moon-cinematic .moon-current-marker { display: flex; align-items: center; gap: 10px; color: #ccebf2; font-size: 13px; letter-spacing: 2px; }
+.moon-cinematic .moon-current-marker > b { margin-left: auto; font: 23px Consolas, monospace; opacity: .8; }
+.moon-cinematic .moon-current-mission h3 { margin: 17px 0 21px; font-size: clamp(22px, 2.2vw, 30px); font-weight: 550; line-height: 1.55; letter-spacing: 1px; color: #edf8fc; }
+.moon-cinematic .moon-current-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; justify-content: space-between; }
+.moon-cinematic .moon-current-bottom > span { font-size: 12px; color: #a1bdcd; }
+.moon-cinematic .moon-current-bottom kbd { font: 11px Consolas, monospace; margin-right: 6px; padding: 3px 6px; }
+.moon-cinematic .moon-current-bottom > button { display: flex; align-items: center; gap: 16px; padding: 10px 14px; font-size: 13px; border: 1px solid #badde45b; background: #a2d3df12; color: #d6f2f8; }
+.moon-cinematic .moon-current-mission.is-complete { border-left-color: #8cbaaa; }
+.moon-cinematic .moon-mission-groups { display: grid; grid-template-columns: 1.05fr 1fr; gap: 38px; margin: 30px 0 26px; }
+.moon-cinematic .moon-mission-groups section > header { display: flex; gap: 9px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.moon-cinematic .moon-mission-groups header h3 { margin: 0; font-size: 15px; font-weight: 500; letter-spacing: 1px; }
+.moon-cinematic .moon-mission-groups header > span { margin-left: auto; font: 12px Consolas, monospace; opacity: .6; }
+.moon-cinematic .moon-pending-missions { color: #abbfcc; }
+.moon-cinematic .moon-completed-missions { color: #8aada0; }
+.moon-cinematic .moon-mission-groups ol { display: block; list-style: none; padding: 0; margin: 5px 0 0; counter-reset: none; }
+.moon-cinematic .moon-mission-groups li { min-height: 0; padding: 0; border-bottom: 1px solid #93b4c319; font-size: 14px; line-height: 1.6; }
+.moon-cinematic .moon-mission-groups li::before { content: none; }
+.moon-cinematic .moon-pending-missions li { display: flex; gap: 13px; align-items: start; padding: 14px 0; color: #9eafba; }
+.moon-cinematic .moon-mission-number { font: 12px Consolas, monospace; padding-top: 4px; color: #6d8795; flex-shrink: 0; }
+.moon-cinematic .moon-pending-missions li > small { font-size: 10px; color: #68808f; margin-left: auto; white-space: nowrap; padding-top: 4px; }
+.moon-cinematic .moon-completed-missions summary { display: flex; align-items: start; gap: 10px; padding: 12px 0; list-style: none; cursor: pointer; color: #81a091; font-size: 13px; }
+.moon-cinematic .moon-completed-missions summary::-webkit-details-marker { display: none; }
+.moon-cinematic .moon-completed-missions summary > svg { flex-shrink: 0; margin-top: 3px; }
+.moon-cinematic .moon-completed-missions summary > .moon-report-toggle { margin-left: auto; opacity: .5; }
+.moon-cinematic .moon-completed-missions details[open] .moon-report-toggle { rotate: 90deg; }
+.moon-cinematic .moon-completed-missions details > p { margin: 0 0 14px 51px; color: #829aa2; font-size: 12px; line-height: 1.9; }
+.moon-cinematic .moon-mission-groups .moon-mission-empty { font-size: 13px; color: #758b98; margin: 18px 0; }
+.moon-cinematic .moon-journal-footer { padding-top: 20px; border-top: 1px solid var(--line); }
+.moon-cinematic .moon-mission-systems { display: flex; flex-wrap: wrap; gap: 13px 25px; font-size: 11px; color: #6b8594; }
+.moon-cinematic .moon-mission-systems b { color: #93aeba; font-weight: 400; margin-left: 5px; }
+.moon-cinematic .moon-journal-footer > p { font-size: 11px; color: #688492; margin: 14px 0; }
+.moon-cinematic .moon-journal-footer .moon-restart { padding: 0; margin: 0; }
+.moon-cinematic .moon-journal-footer .moon-restart button { font-size: 11px; padding: 7px 10px; }
+
+@media (max-width: 1100px) {
+  .moon-cinematic .moon-center-status { top: 98px; }
+  .moon-cinematic .moon-mission-groups { gap: 25px; }
+}
+@media (max-width: 820px) {
+  .moon-cinematic { --frame-width: 26px; }
+  .moon-cinematic .moon-terminal-header { gap: 16px; min-height: 61px; }
+  .moon-cinematic .moon-archive-tabs { gap: 24px; }
+  .moon-cinematic .moon-archive-tabs button { font-size: 14px; }
+  .moon-cinematic .moon-mission-groups { grid-template-columns: 1fr; gap: 25px; }
+  .moon-cinematic .moon-status-stack { top: 185px; width: 190px; right: 20px; }
+  .moon-cinematic .moon-signal-card { padding: 14px 16px; }
+  .moon-cinematic .moon-objective { width: 300px; left: 20px; bottom: 113px; padding: 17px 19px 15px; }
+  .moon-cinematic .moon-actions { left: 20px; right: 20px; bottom: 21px; padding: 7px 10px; justify-content: space-between; }
+  .moon-cinematic .moon-actions button { padding: 8px 10px; font-size: 11px; }
+  .moon-cinematic .moon-help { left: 20px; right: 20px; bottom: 81px; font-size: 10px; }
+  .moon-cinematic .moon-guide { left: 20px; bottom: 344px; max-height: calc(100dvh - 475px); }
+  .moon-cinematic .moon-current-mission { padding: 19px; }
+}
+@media (max-width: 560px) {
+  .moon-cinematic { --frame-width: 22px; }
+  .moon-cinematic :is(.moon-mission-terminal, .moon-expedition, .moon-comms, .moon-calibration > div) { padding-inline: 5px; }
+  .moon-cinematic .moon-terminal-header { padding-inline: 2px; gap: 12px; }
+  .moon-cinematic .moon-archive-tabs { gap: 16px; }
+  .moon-cinematic .moon-archive-tabs button { font-size: 12px; letter-spacing: 0; gap: 4px; }
+  .moon-cinematic .moon-terminal-close { padding: 2px; }
+  .moon-cinematic .moon-terminal-close kbd { padding: 5px; font-size: 10px; }
+  .moon-cinematic .moon-terminal-body { padding-top: 13px; }
+  .moon-cinematic .moon-journal-content { padding-inline: 3px; }
+  .moon-cinematic .moon-mission-summary { gap: 14px; }
+  .moon-cinematic .moon-mission-summary h2 { font-size: 20px; }
+  .moon-cinematic .moon-mission-progress { width: 115px; font-size: 10px; }
+  .moon-cinematic .moon-current-mission { padding: 15px; }
+  .moon-cinematic .moon-current-mission h3 { font-size: 21px; }
+  .moon-cinematic .moon-current-bottom > span { font-size: 11px; line-height: 1.9; }
+  .moon-cinematic .moon-expedition > header h2 { font-size: 20px; }
+  .moon-cinematic .moon-expedition-body { padding-inline: 5px; }
+  .moon-cinematic .moon-expedition p { font-size: 12px; }
+  .moon-cinematic .moon-expedition button { font-size: 12px; }
+  .moon-cinematic .moon-field-list header { flex-wrap: wrap; }
+  .moon-cinematic .moon-top { padding: 18px 18px; }
+  .moon-cinematic .moon-systems { font-size: 11px; }
+  .moon-cinematic .moon-systems button { padding: 7px; }
+  .moon-cinematic .moon-status-stack { width: 169px; right: 18px; top: 181px; }
+  .moon-cinematic .moon-signal-reading { gap: 13px; }
+  .moon-cinematic .moon-signal-reading strong { font-size: 28px; }
+  .moon-cinematic .moon-signal-reading > span { font-size: 12px; }
+  .moon-cinematic .moon-objective { left: 18px; width: 280px; }
+  .moon-cinematic .moon-actions { left: 18px; right: 18px; padding-inline: 8px; }
+  .moon-cinematic .moon-actions button { padding-inline: 8px; font-size: 10px; gap: 5px; }
+  .moon-cinematic .moon-actions kbd { display: none; }
+}
