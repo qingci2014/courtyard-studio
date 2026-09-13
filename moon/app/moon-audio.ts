@@ -14,7 +14,7 @@ export class MoonAudio{
  }if(this.ctx.state==='suspended')await this.ctx.resume();this.level();return this.ctx.state==='running';}catch{/* Audio failure must not prevent play. */return false;}}
  pause(value:boolean){this.suspended=value;this.level();if(value)this.stride=0;}
  update(f:SoundFrame){if(!f.driving)this.vehicleStarted=false;const c=this.ctx;if(!c||this.disposed)return;this.pause(!f.active);if(!f.active)return;if(f.driving&&!this.vehicleStarted&&Math.abs(f.speed)>.08&&c.state==='running'){this.startVehicle();this.vehicleStarted=true;}this.phase+=f.dt;
-  this.breath?.gain.setTargetAtTime((f.driving||f.indoor)?0:.055+.085*Math.max(0,Math.sin(this.phase*.8)),c.currentTime,.12);
+  this.breath?.gain.setTargetAtTime((f.driving||f.indoor)?0:1.4*(.055+.085*Math.max(0,Math.sin(this.phase*.8))),c.currentTime,.12);
   this.cabin?.gain.setTargetAtTime(f.indoor&&f.powered?.075:0,c.currentTime,.3);
   if(!f.driving&&f.distance<.4){this.stride+=f.distance;if(this.stride>.85){this.stride%=.85;this.step(f.indoor);}}
  }
