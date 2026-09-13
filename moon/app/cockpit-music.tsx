@@ -1,42 +1,37 @@
 import {useEffect,useRef,useState} from 'react';
+import {CockpitSoundscape} from './cockpit-soundscape';
 
 const preferenceKey='selene-cockpit-music-v1';
 export default function CockpitMusic({ready,src,returnHref}:{ready:boolean;src:string;returnHref:string}){
- const audio=useRef<HTMLAudioElement>(null),panel=useRef<HTMLElement>(null);
- const enabled=useRef(true),alive=useRef(false);
+ const sound=useRef<CockpitSoundscape|null>(null),panel=useRef<HTMLElement>(null);
+ const enabled=useRef(true),level=useRef(.35),pressAction=useRef<boolean|null>(null);
  const [volume,setVolume]=useState(35),[playing,setPlaying]=useState(false),[failed,setFailed]=useState(false);
- const save=()=>{try{localStorage.setItem(preferenceKey,JSON.stringify({volume:audio.current?.volume??.35}));}catch{}};
- const play=()=>{
-  const player=audio.current;if(!player||!ready||document.hidden)return;
-  setFailed(false);
-  void player.play().then(()=>{if(!alive.current||!enabled.current||document.hidden)player.pause();}).catch(error=>{
-   if(alive.current&&error?.name!=='NotAllowedError'&&error?.name!=='AbortError')setFailed(true);
-  });
- };
+ const save=()=>{try{localStorage.setItem(preferenceKey,JSON.stringify({volume:level.current}));}catch{}};
  useEffect(()=>{
-  alive.current=true;enabled.current=true;const player=audio.current!;
-  try{const pref=JSON.parse(localStorage.getItem(preferenceKey)??'null');if(pref){if(Number.isFinite(pref.volume)){player.volume=Math.min(1,Math.max(0,pref.volume));setVolume(Math.round(player.volume*100));}else player.volume=.35;}else player.volume=.35;}catch{player.volume=.35;}
-  return()=>{alive.current=false;player.pause();};
+  try{const pref=JSON.parse(localStorage.getItem(preferenceKey)??'null');if(Number.isFinite(pref?.volume))level.current=Math.min(1,Math.max(0,pref.volume));}catch{}
+  setVolume(Math.round(level.current*100));
  },[]);
  useEffect(()=>{
   if(!ready)return;
-  if(enabled.current)play();
-  const unlock=(event:Event)=>{if(panel.current?.contains(event.target as Node))return;if(enabled.current&&audio.current?.paused)play();};
-  const visibility=()=>{if(document.hidden)audio.current?.pause();else if(enabled.current)play();};
+  let live=true;
+  const engine=new CockpitSoundscape(src,(active,error)=>{if(live){setPlaying(active);setFailed(error);}});
+  sound.current=engine;engine.setVolume(level.current);
+  if(enabled.current&&!document.hidden)engine.start();
+  const unlock=(event:Event)=>{if(panel.current?.contains(event.target as Node))return;if(enabled.current&&!document.hidden)engine.start();};
+  const visibility=()=>{if(document.hidden)engine.pause();else if(enabled.current)engine.start();};
   document.addEventListener('pointerdown',unlock);document.addEventListener('keydown',unlock);document.addEventListener('visibilitychange',visibility);
-  return()=>{document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);document.removeEventListener('visibilitychange',visibility);audio.current?.pause();};
+  return()=>{live=false;document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);document.removeEventListener('visibilitychange',visibility);engine.dispose();sound.current=null;};
  },[ready,src]);
- const toggle=()=>{const player=audio.current;if(!player)return;if(!player.paused){enabled.current=false;player.pause();}else{enabled.current=true;play();}save();};
- const adjustVolume=(delta:number)=>{const player=audio.current;if(!player)return;const next=Math.min(100,Math.max(0,Math.round(player.volume*100)+delta));player.volume=next/100;setVolume(next);save();};
- const playLabel=failed?'重试播放背景音乐':playing?'暂停背景音乐':'播放背景音乐';
+ const toggle=()=>{const start=pressAction.current??!playing;pressAction.current=null;enabled.current=start;if(start)sound.current?.start();else sound.current?.pause();};
+ const adjustVolume=(delta:number)=>{const next=Math.min(100,Math.max(0,Math.round(level.current*100)+delta));level.current=next/100;sound.current?.setVolume(level.current);setVolume(next);save();};
+ const playLabel=playing?'暂停舱内声音':failed?'重试播放舱内声音':'播放舱内声音';
  return <nav ref={panel} className="cockpit-controls" aria-label="驾驶舱控制">
-  <audio ref={audio} src={ready?src:undefined} loop preload="none" onPlay={()=>setPlaying(true)} onPause={()=>setPlaying(false)} onError={()=>setFailed(true)}/>
-  <div className="cockpit-transport" role="group" aria-label={`背景音乐 · 音量 ${volume}%`}>
-   <button type="button" className="cockpit-volume-key" disabled={volume===0} aria-label="降低音乐音量" title={`降低音量 · 当前 ${volume}%`} onClick={()=>adjustVolume(-5)}><span className="cockpit-small-keycap"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h8"/></svg></span></button>
-  <button className="cockpit-play" type="button" disabled={!ready} aria-label={playLabel} title={playLabel} aria-pressed={playing} onClick={toggle}>
+  <div className="cockpit-transport" role="group" aria-label={`舱内声音 · 音量 ${volume}%`}>
+   <button type="button" className="cockpit-volume-key" disabled={volume===0} aria-label="降低舱内音量" title={`降低音量 · 当前 ${volume}%`} onClick={()=>adjustVolume(-5)}><span className="cockpit-small-keycap"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h8"/></svg></span></button>
+  <button className="cockpit-play" type="button" disabled={!ready} aria-label={playLabel} title={playLabel} aria-pressed={playing} onPointerDown={()=>{pressAction.current=!playing;}} onPointerCancel={()=>{pressAction.current=null;}} onKeyDown={e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat)pressAction.current=!playing;}} onBlur={()=>{pressAction.current=null;}} onClick={toggle}>
    <span className="cockpit-keycap">{playing?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6v12M16 6v12" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>:<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z" fill="currentColor"/></svg>}</span>
   </button>
-   <button type="button" className="cockpit-volume-key" disabled={volume===100} aria-label="提高音乐音量" title={`提高音量 · 当前 ${volume}%`} onClick={()=>adjustVolume(5)}><span className="cockpit-small-keycap"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h8M8 4v8"/></svg></span></button>
+   <button type="button" className="cockpit-volume-key" disabled={volume===100} aria-label="提高舱内音量" title={`提高音量 · 当前 ${volume}%`} onClick={()=>adjustVolume(5)}><span className="cockpit-small-keycap"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h8M8 4v8"/></svg></span></button>
   </div>
   <a className="cockpit-return" href={returnHref}>返回基地</a>
   <style>{`
