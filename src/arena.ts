@@ -7,12 +7,12 @@ export class Arena {
  private scene=new T.Scene(); private camera=new T.PerspectiveCamera(35,1,.1,100); private renderer:T.WebGLRenderer;
  private robot:Robot;readonly ready:Promise<void>;private cubes:T.Mesh[]=[];private cursor:T.Mesh;private aimHalo:T.Mesh;private aimLabel:T.Sprite;private guide:T.Line;private burst:T.Points;private burstLife=0;private particleVelocity:number[]=[];private ray=new T.Raycaster();
  constructor(private el:HTMLElement,private game:Game){
- this.renderer=new T.WebGLRenderer({antialias:true,alpha:true});this.renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=T.PCFSoftShadowMap;this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=.95;el.appendChild(this.renderer.domElement);
+ this.renderer=new T.WebGLRenderer({antialias:true,alpha:true});this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=T.PCFSoftShadowMap;this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=.95;el.appendChild(this.renderer.domElement);
  this.camera.position.set(6,8.8,11.5);this.camera.lookAt(0,1,0);this.scene.fog=new T.FogExp2(0x0b141e,.022);
  this.scene.background=new T.Color(0x0d1117);
  const environment=new RoomEnvironment();const pmrem=new T.PMREMGenerator(this.renderer);this.scene.environment=pmrem.fromScene(environment,.035).texture;this.scene.environmentIntensity=.65;environment.dispose();pmrem.dispose();
  this.scene.add(new T.HemisphereLight(0xe5f0ff,0x080a0d,.3));
- const key=new T.DirectionalLight(0xf3f7ff,1.8);key.position.set(-3,8,5);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-7;key.shadow.camera.right=7;key.shadow.camera.top=7;key.shadow.camera.bottom=-7;key.shadow.normalBias=.035;this.scene.add(key);
+ const key=new T.DirectionalLight(0xf3f7ff,1.8);key.position.set(-3,8,5);key.castShadow=true;key.shadow.mapSize.set(1536,1536);key.shadow.camera.left=-7;key.shadow.camera.right=7;key.shadow.camera.top=7;key.shadow.camera.bottom=-7;key.shadow.normalBias=.035;this.scene.add(key);
  const rim=new T.DirectionalLight(0x84d6ff,1.4);rim.position.set(4,4,-5);this.scene.add(rim);
  const fill=new T.DirectionalLight(0xf4f6fc,.6);fill.position.set(5,2,4);this.scene.add(fill);
  const dark=new T.MeshStandardMaterial({color:0x0e141b,metalness:.8,roughness:.32});
@@ -45,7 +45,7 @@ export class Arena {
  }
  private box(w:number,h:number,d:number,mat:T.Material){const m=new T.Mesh(new RoundedBoxGeometry(w,h,d,2,Math.min(.06,w/4,h/4,d/4)),mat);m.castShadow=true;this.scene.add(m);return m;}
  private label(text:string,x:number,y:number,z:number,color:string,width:number){const c=document.createElement('canvas');c.width=512;c.height=96;const ctx=c.getContext('2d')!;ctx.fillStyle=color;ctx.font='500 36px monospace';ctx.textAlign='center';ctx.fillText(text,256,62);const tex=new T.CanvasTexture(c);const mesh=new T.Mesh(new T.PlaneGeometry(width,width*96/512),new T.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));mesh.rotation.x=-Math.PI/2;mesh.position.set(x,y,z);this.scene.add(mesh);}
- private resize(){const w=this.el.clientWidth,h=this.el.clientHeight;if(!w||!h)return;this.camera.aspect=w/h;this.camera.position.set(6,8.8,Math.max(11.5,11.5/this.camera.aspect));this.camera.lookAt(0,1,0);this.camera.updateProjectionMatrix();this.renderer.setSize(w,h);}
+ private resize(){const w=this.el.clientWidth,h=this.el.clientHeight;if(!w||!h)return;this.camera.aspect=w/h;this.camera.position.set(6,8.8,Math.max(11.5,11.5/this.camera.aspect));this.camera.lookAt(0,1,0);this.camera.updateProjectionMatrix();this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(2_400_000/(w*h))));this.renderer.setSize(w,h);}
  pointerToWorld(x:number,y:number){const r=this.el.getBoundingClientRect();this.ray.setFromCamera(new T.Vector2((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1),this.camera);return this.ray.ray.intersectPlane(new T.Plane(new T.Vector3(0,1,0),0),new T.Vector3());}
  celebrate(){this.burstLife=1;this.burst.visible=true;const p=this.burst.geometry.attributes.position as T.BufferAttribute;this.particleVelocity=[];for(let i=0;i<p.count;i++){p.setXYZ(i,TARGET.x,.4,TARGET.z);this.particleVelocity.push((Math.random()-.5)*3,2+Math.random()*2,(Math.random()-.5)*3);}p.needsUpdate=true;}
  render(dt:number,time:number){const p=this.game.position;this.robot.update(p,this.game.held!==null||this.game.phase==='down',dt,time);

@@ -134,7 +134,9 @@ export class Game {
    this.remaining = Math.max(0, this.remaining - dt);
    if (this.remaining === 0) { this.state = 'finished'; this.grip = false; this.message = '挑战完成'; return; }
   }
-  dt = Math.min(dt, .05);
+  // Match the animation to elapsed time when inference or rendering takes
+  // longer than one frame. The easing below remains stable for larger steps.
+  dt = Math.min(dt, .15);
   if (this.mode === 'hand' && !this.tracked) return;
   this.messageTime = Math.max(0, this.messageTime - dt);
   this.blocks.forEach((block, index) => {

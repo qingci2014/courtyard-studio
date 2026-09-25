@@ -3,6 +3,13 @@ import {Game,TARGET} from '../game';
 const tick=(g:Game,seconds=2)=>{for(let t=0;t<seconds;t+=.02)g.update(.02);};
 function pickup(g:Game){g.setTarget(-2.4,-.7);tick(g);g.setGrip(true);tick(g);expect(g.held).toBe(0);}
 describe('Air grab interaction state',()=>{
+ it('completes a grab in real time even when rendering runs at 12 fps',()=>{
+  const g=new Game();g.setTarget(-2.4,-.7);
+  for(let i=0;i<18;i++)g.update(1/12);
+  g.setGrip(true);
+  for(let i=0;i<6;i++)g.update(1/12);
+  expect(g.held).toBe(0);
+ });
  it('slides an overlapping release to a random clear neighbour with tilt and bounce',()=>{
   const landings=new Set<string>();
   for(const random of [0,.25,.5,.75,.99]){

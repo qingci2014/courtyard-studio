@@ -21,7 +21,9 @@ export class HandInput {
  stop(){this.active=false;cancelAnimationFrame(this.raf);this.stream?.getTracks().forEach(t=>t.stop());this.stream=null;this.video.srcObject=null;this.canvas.getContext('2d')?.clearRect(0,0,this.canvas.width,this.canvas.height);}
  private loop=(now:number)=>{if(!this.active)return;this.raf=requestAnimationFrame(this.loop);if(document.hidden||now-this.lastInference<65||this.video.readyState<2||this.video.currentTime===this.lastVideo)return;this.lastInference=now;this.lastVideo=this.video.currentTime;
   try{const result=this.model!.detectForVideo(this.video,now);const points=result.landmarks[0];this.draw(points);
-   if(!points){this.hooks.frame(null);if(now-this.lastSeen>700&&!this.missing){this.missing=true;this.filter.suspend();this.hooks.lost();}return;}
+   // A pinched hand can briefly hide fingertips. Keep the last stable command
+   // through those gaps; only freeze the arm after tracking is truly lost.
+   if(!points){if(now-this.lastSeen>700&&!this.missing){this.missing=true;this.filter.suspend();this.hooks.frame(null);this.hooks.lost();}return;}
    this.lastSeen=now;if(this.missing){this.missing=false;this.hooks.status('重新看到手了。暂停的挑战需要点击继续。');}
    const thumb=points[4]!,finger=points[8]!,wrist=points[0]!,middle=points[9]!;
    const aspect=this.video.videoWidth/this.video.videoHeight;
