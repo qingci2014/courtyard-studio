@@ -95,3 +95,5 @@ public/vision 包含完整模型和 SIMD / 非 SIMD WASM 回退。首次加载�
 入口：https://studio.qingci.store/floor/ 。纯前端页面位于 `public/floor`，随现有 Vite 构建复制到 `dist/floor`，无需新增服务或环境变量。方案保存在访问者浏览器本地。
 
 来源：<https://github.com/wy51ai/floorplan-3d>，版本 `730ec0923a018fdf38b4687c5ef385c7dcac451f`。保留原项目 MIT 许可证；Three.js 0.160.0 及其五个扩展模块放在 `public/floor/vendor/three-r160`，通过 `/floor/` 下的绝对路径加载，避免外部 CDN 依赖。
+
+发布构建末尾由 `scripts/build-floor.mjs` 将 3D 模块和依赖打包成一个带内容指纹的普通脚本，不依赖浏览器 import map 支持。首次加载时点击 3D 会等待组件就绪后自动进入。
