@@ -1,0 +1,11 @@
+import {chromium} from 'playwright';
+import fs from 'node:fs/promises';
+await fs.mkdir('.qa',{recursive:true});
+const browser=await chromium.launch({headless:true,args:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const page=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleFactor:1});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+await page.goto('http://127.0.0.1:4178/',{waitUntil:'networkidle'});
+await page.waitForFunction(()=>window.__studio?.getRenderer()?.calls>0,{timeout:30000});
+await page.screenshot({path:'.qa/first-view.png'});
+console.log(JSON.stringify({errors,title:await page.title(),stats:await page.evaluate(()=>({project:window.__studio.getProject().name,render:window.__studio.getRenderer(),rooms:window.__studio.getProject().floors.map(f=>f.rooms.length)}))},null,2));
+await browser.close();

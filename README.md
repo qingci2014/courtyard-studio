@@ -92,8 +92,8 @@ public/vision 包含完整模型和 SIMD / 非 SIMD WASM 回退。首次加载�
 
 ## 户型装修设计 /floor
 
-入口：https://studio.qingci.store/floor/ 。纯前端页面位于 `public/floor`，随现有 Vite 构建复制到 `dist/floor`，无需新增服务或环境变量。方案保存在访问者浏览器本地。
+入口：https://studio.qingci.store/floor/ 。新版建筑建模工作台源码位于 `floor/`，替换原 `public/floor` 页面。支持图片/PDF/DXF 导入、墙体识别与手动修复、多层建模、家具与门窗编辑、三维推拉及离线漫游 HTML 导出。方案和图纸保存在访问者浏览器本地，支持项目 JSON 备份与旧版 JSON 导入，无需新增服务或密钥。
 
-来源：<https://github.com/wy51ai/floorplan-3d>，版本 `730ec0923a018fdf38b4687c5ef385c7dcac451f`。保留原项目 MIT 许可证；Three.js 0.160.0 及其五个扩展模块放在 `public/floor/vendor/three-r160`，通过 `/floor/` 下的绝对路径加载，避免外部 CDN 依赖。
+安装：根目录运行 `npm ci` 和 `npm --prefix floor ci`。`npm run build` 一并构建所有页面；`npm run build:floor` 只构建户型工作台并复制到 `dist/floor`。资源前缀固定为 `/floor/`，Three.js、PDF 资源及漫游引擎均从本站加载。EdgeOne 使用 Node.js 22.17.1，配置已包含两处依赖安装。
 
-发布构建末尾由 `scripts/build-floor.mjs` 将 3D 模块和依赖打包成一个带内容指纹的普通脚本，不依赖浏览器 import map 支持。首次加载时点击 3D 会等待组件就绪后自动进入。
+验证：`npm test`、`npm run test:floor`、`npm run build`、`node scripts/verify-factory.mjs`。本地独立开发及操作说明见 [floor/README.md](floor/README.md)。家具与材质改编自 <https://github.com/wy51ai/floorplan-3d>，原 MIT 许可证保留在 `floor/LICENSE.floorplan-3d`；第三方许可证随构建发布。

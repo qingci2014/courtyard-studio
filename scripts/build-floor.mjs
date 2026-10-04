@@ -1,28 +1,21 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import crypto from 'node:crypto';
-import {build} from 'esbuild';
+import {fileURLToPath} from 'node:url';
 
-const source = await fs.readFile('public/floor/index.html', 'utf8');
-const moduleTag = /<script type="module">([\s\S]*?)<\/script>/;
-const moduleCode = source.match(moduleTag)?.[1];
-if (!moduleCode) throw new Error('Floor 3D module is missing');
-// A single classic script also works in embedded browsers without import maps.
-const result = await build({
-  stdin: {contents: moduleCode, resolveDir: process.cwd(), sourcefile: 'floor-3d.js'},
-  bundle: true, write: false, minify: true, format: 'iife', target: 'es2020',
-  legalComments: 'eof',
-  alias: {
-    'three/addons': path.resolve('public/floor/vendor/three-r160/examples/jsm'),
-    three: path.resolve('public/floor/vendor/three-r160/build/three.module.js'),
-  },
-});
-const code = result.outputFiles[0].contents;
-const version = crypto.createHash('sha256').update(code).digest('hex').slice(0, 12);
-const filename = `engine-${version}.js`;
-await fs.mkdir('dist/floor', {recursive: true});
-await fs.writeFile(`dist/floor/${filename}`, code);
-const html = source.replace(/<script type="importmap">[\s\S]*?<\/script>\s*/, '')
-  .replace(moduleTag, `<script defer src="/floor/${filename}" onload="floor3dLoaded()" onerror="floor3dLoadFailed()"></script>`);
-await fs.writeFile('dist/floor/index.html', html);
-console.log(`Floor 3D bundled: ${filename} (${code.length} bytes)`);
+const root = fileURLToPath(new URL('../', import.meta.url));
+const source = path.join(root, 'floor/dist');
+const target = path.join(root, 'dist/floor');
+const html = await fs.readFile(path.join(source, 'index.html'), 'utf8');
+if (!html.includes('src="/floor/assets/') || !html.includes('href="/floor/assets/')) {
+  throw new Error('Build floor with --base=/floor/ before publishing the subdirectory');
+}
+for (const resource of [
+  'walkthrough-runtime.js', 'walkthrough-licenses.txt', 'third-party-licenses.txt',
+  'pdfjs/cmaps', 'pdfjs/standard_fonts', 'pdfjs/wasm', 'pdfjs/iccs',
+]) await fs.access(path.join(source, resource));
+await fs.mkdir(target, {recursive: true});
+await fs.cp(source, target, {recursive: true});
+// Hosts with clean HTML URLs resolve /floor through this sibling entry;
+// directory-index hosts resolve /floor/. Both load the same absolute assets.
+await fs.writeFile(path.join(root, 'dist/floor.html'), html);
+console.log('Floor studio published to dist/floor with local PDF and offline walkthrough resources.');

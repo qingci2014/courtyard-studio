@@ -1,0 +1,10 @@
+import {chromium} from 'playwright';
+const browser=await chromium.launch({headless:true,args:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const page=await browser.newPage({viewport:{width:1600,height:1000}});page.on('pageerror',e=>console.log('ERROR',e.message));
+await page.goto('http://127.0.0.1:4178/',{waitUntil:'networkidle'});await page.waitForFunction(()=>window.__studio?.getRenderer()?.calls>0);
+await page.locator('#fileMenu').click();await page.locator('[data-file="reference"]').click();await page.locator('#confirmAction').click();await page.locator('[data-view="3d"]').click();await page.locator('#fit3d').click();
+await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+console.log('REFERENCE',await page.evaluate(()=>({render:window.__studio.getRenderer(),furniture:window.__studio.getProject().floors[0].furniture.slice(0,3),button:document.querySelector('#furniture3d').className})));
+await page.screenshot({path:'.qa/reference-isolated.png'});
+await page.setViewportSize({width:390,height:844});await page.locator('#fit3d').click();console.log('MOBILE',await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('body *')].filter(x=>x.getBoundingClientRect().right>innerWidth+1).map(x=>({tag:x.tagName,id:x.id,class:x.className})).slice(0,10)})));await page.screenshot({path:'.qa/mobile-isolated.png'});
+await browser.close();
