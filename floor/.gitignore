@@ -4,6 +4,9 @@ dist/
 *.log
 public/pdfjs/
 public/third-party-licenses.txt
+public/source.html
+public/source-info.txt
+public/license.txt
 public/walkthrough-runtime.js
 public/walkthrough-licenses.txt
 .runtime/

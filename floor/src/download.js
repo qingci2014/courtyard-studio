@@ -1,1 +1,1 @@
-export function download(name,blob){const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);}
+export function download(name,blob,{keepUrl=false}={}){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;a.hidden=true;document.body.append(a);a.click();a.remove();if(!keepUrl)setTimeout(()=>URL.revokeObjectURL(url),60000);return url;}

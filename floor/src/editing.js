@@ -1,4 +1,5 @@
 import {clone,uid,length,onWall,furnitureBounds,canPlaceOpening,checkRoomEdit,validateProject} from './model.js';
+import {phaseVisible} from './renovation.js';
 
 export const lists={wall:'walls',opening:'openings',room:'rooms',furniture:'furniture',stair:'stairs',solid:'solids'};
 export const entities=f=>Object.entries(lists).flatMap(([kind,key])=>(f[key]||[]).map(o=>({kind,id:o.id,o})));
@@ -6,7 +7,7 @@ export const entity=(f,ref)=>ref&&f[lists[ref.kind]]?.find(o=>o.id===ref.id);
 export const hidden=(f,ref)=>{const o=entity(f,ref);return !o||!!o.hidden||(ref.kind==='opening'&&!!f.walls.find(w=>w.id===o.wallId)?.hidden);};
 export const locked=(f,ref)=>{const o=entity(f,ref);return !o||!!o.locked||(ref.kind==='opening'&&!!f.walls.find(w=>w.id===o.wallId)?.locked);};
 export function expandSelection(f,refs,{attached=false}={}){
- const all=entities(f),ids=new Set(refs.map(r=>r.id));
+ const all=entities(f).filter(r=>phaseVisible(r.o)),ids=new Set(refs.map(r=>r.id));
  let previous=-1;while(previous!==ids.size){previous=ids.size;const groups=new Set(all.filter(r=>ids.has(r.id)).map(r=>r.o.groupId).filter(Boolean));
   all.forEach(r=>{if(groups.has(r.o.groupId))ids.add(r.id);});
   if(attached)all.filter(r=>r.kind==='opening'&&ids.has(r.o.wallId)).forEach(r=>ids.add(r.id));
@@ -62,7 +63,7 @@ export function transformSelection(f,refs,{dx=0,dy=0,angle=0,mirror=null,copy=fa
  const point=(p,i)=>{let x=p.x-c.x,y=p.y-c.y;if(mirror==='x')x=-x;if(mirror==='y')y=-y;return{x:c.x+x*cos-y*sin+dx*i,y:c.y+x*sin+y*cos+dy*i};};
  for(let i=1;i<=iterations;i++){
   const map=new Map(all.map(r=>[r.id,copy?uid():r.id])),groups=new Map();
-  for(const ref of all){const source=entity(f,ref),o=clone(source);o.id=map.get(ref.id);
+  for(const ref of all){const source=entity(f,ref),o=clone(source);o.id=map.get(ref.id);if(copy)delete o.code;
    if(copy&&o.groupId){if(!groups.has(o.groupId))groups.set(o.groupId,uid());o.groupId=groups.get(o.groupId);o.groupName=(o.groupName||'组合')+' · 副本';}
    if(ref.kind==='wall'){o.a=point(source.a,i);o.b=point(source.b,i);o.inferred=false;}
    else if(ref.kind==='opening'){
@@ -76,13 +77,13 @@ export function transformSelection(f,refs,{dx=0,dy=0,angle=0,mirror=null,copy=fa
   }
  }
  for(const ref of moved){const o=entity(next,ref);if(ref.kind==='opening'&&!canPlaceOpening(next,o))throw new Error('门窗超出墙体或与其他洞口重叠，请调整间距');if(ref.kind==='room')checkRoomEdit(next,o);}
- validateProject({version:2,units:'m',name:'编辑校验',roof:'none',floors:[next]});
+ validateProject({version:2,units:'m',name:'编辑校验',roof:'none',floors:[{...next,delivery:undefined}]});
  Object.assign(f,next);return moved;
 }
 export function wallClearance(f,refs,side,gap){
  assertEditable(f,refs);if(!Number.isFinite(gap)||gap<0||gap>100)throw new Error('离墙距离应为 0–100000 毫米');
  const b=selectionBounds(f,refs),excluded=new Set(refs.map(r=>r.id)),x=side==='left'||side==='right',negative=side==='left'||side==='top';
- const candidates=f.walls.filter(w=>!w.hidden&&!excluded.has(w.id)&&(x?Math.abs(w.a.x-w.b.x):Math.abs(w.a.y-w.b.y))<.001).filter(w=>{
+ const candidates=f.walls.filter(w=>phaseVisible(w)&&!w.hidden&&!excluded.has(w.id)&&(x?Math.abs(w.a.x-w.b.x):Math.abs(w.a.y-w.b.y))<.001).filter(w=>{
   const center=x?b.x:b.y,pos=x?w.a.x:w.a.y,lo=x?b.y0:b.x0,hi=x?b.y1:b.x1;
   return (negative?pos<=center:pos>=center)&&Math.max(x?w.a.y:w.a.x,x?w.b.y:w.b.x)>=lo&&Math.min(x?w.a.y:w.a.x,x?w.b.y:w.b.x)<=hi;
  }).map(w=>({w,d:Math.abs((x?w.a.x:w.a.y)-(x?b.x:b.y))})).sort((a,b)=>a.d-b.d);

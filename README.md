@@ -92,8 +92,8 @@ public/vision 包含完整模型和 SIMD / 非 SIMD WASM 回退。首次加载�
 
 ## 户型装修设计 /floor
 
-入口：https://studio.qingci.store/floor/ 。新版建筑建模工作台源码位于 `floor/`，替换原 `public/floor` 页面。支持图片/PDF/DXF 导入、墙体识别与手动修复、多层建模、家具与门窗编辑、三维推拉及离线漫游 HTML 导出。方案和图纸保存在访问者浏览器本地，支持项目 JSON 备份与旧版 JSON 导入，无需新增服务或密钥。
+入口：https://studio.qingci.store/floor/ 。建筑建模工作台源码位于 `floor/`。支持图片/PDF/DWG/DXF 导入、墙体识别与手动修复、多层建模、家具与门窗编辑、三维推拉及离线漫游 HTML 导出。“交付与报价”提供关联尺寸、室内立面、A4/A3 比例 PDF、原始/拆除/新建状态、水电点位、可追溯工程量、可编辑报价及本地方案版本。方案和图纸保存在访问者浏览器本地，支持项目 JSON 备份与旧版 JSON 导入，无需新增服务或密钥。
 
 安装：根目录运行 `npm ci` 和 `npm --prefix floor ci`。`npm run build` 一并构建所有页面；`npm run build:floor` 只构建户型工作台并复制到 `dist/floor`。资源前缀固定为 `/floor/`，Three.js、PDF 资源及漫游引擎均从本站加载。EdgeOne 使用 Node.js 22.17.1，配置已包含两处依赖安装。
 
-验证：`npm test`、`npm run test:floor`、`npm run build`、`node scripts/verify-factory.mjs`。本地独立开发及操作说明见 [floor/README.md](floor/README.md)。家具与材质改编自 <https://github.com/wy51ai/floorplan-3d>，原 MIT 许可证保留在 `floor/LICENSE.floorplan-3d`；第三方许可证随构建发布。
+验证：`npm test`、`npm run test:floor`、`npm run build`、`node scripts/verify-factory.mjs`。本地开发及操作说明见 [floor/README.md](floor/README.md)。家具与材质改编自 <https://github.com/wy51ai/floorplan-3d>，原 MIT 许可证保留在 `floor/LICENSE.floorplan-3d`。包含 GPL-3.0 DWG 组件的 floor 工作台按 GNU GPL v3 发布，许可范围不包含同仓库其他独立应用；对应源码、构建说明和第三方版权声明见 [floor/SOURCE.md](floor/SOURCE.md)及线上 `/floor/source.html`。

@@ -1,3 +1,4 @@
+import {validateDelivery,phaseVisible,constructionStatus,remapFloorDelivery,scaleFloorDelivery} from './renovation.js';
 import reference from './reference-sample.json' with {type:'json'};
 import {roomBoundaryWalls,roomLabelPoint,cleanRoomPolygon,checkRoomPolygon,polygonsOverlap,polygonContains} from './room-geometry.js';
 import {validateSolid,validateScene} from './modeling.js';
@@ -37,14 +38,24 @@ export function calibrateFloor(f,a,b,metres,{scaleModel=false}={}){
   next.rooms.forEach(r=>{r.poly=r.poly.map(([x,y])=>{const p=point({x,y});return[p.x,p.y];});});
   next.solids?.forEach(o=>{const scale=poly=>poly.map(([x,y])=>{const p=point({x,y});return[p.x,p.y];});o.poly=scale(o.poly);o.holes=(o.holes||[]).map(scale);});
   [...next.furniture,...next.stairs].forEach(o=>Object.assign(o,point(o),{w:o.w*ratio,d:o.d*ratio}));
+  scaleFloorDelivery(next,a,ratio);
   next.guides?.forEach(g=>g.value=a[g.axis]+(g.value-a[g.axis])*ratio);
   next.cad?.segments.forEach(s=>{s.a=point(s.a);s.b=point(s.b);});
  }
- try{validateProject({version:2,units:'m',name:'尺寸校准',roof:'none',floors:[next]});}
+ try{const check=clone(next);delete check.delivery;validateProject({version:2,units:'m',name:'尺寸校准',roof:'none',floors:[check]});}
  catch{throw new Error('缩放后的尺寸超出可用范围，请检查选中的两点、图纸数字和单位');}
  Object.assign(f,next);return ratio;
 }
 export const wall=(a,b,thickness=.2)=>({id:uid(),a:{...a},b:{...b},thickness,color:'#edece5'});
+// Calibration changes the coordinate system, not construction intent. Scale the
+// saved original by the same factor so before/after drawings remain comparable.
+export function calibrateProjectFloor(project,floorId,a,b,metres,options={}){
+ const next=clone(project),f=next.floors.find(f=>f.id===floorId);if(!f)throw new Error('楼层不存在');const image=clone(f.image);
+ const ratio=calibrateFloor(f,a,b,metres,options),baseline=next.delivery?.baseline?.floors.find(f=>f.id===floorId);
+ if(options.scaleModel&&baseline){baseline.image=image;calibrateFloor(baseline,a,b,metres,{scaleModel:true});delete baseline.image;}
+ if(next.delivery&&next.delivery.source!=='measured'){if(options.scaleModel)next.delivery.source=next.floors.some(f=>f.image&&!f.image.calibrated)?'estimated':'calibrated';next.delivery.sourceNote=`图纸校准：${f.name}，参照长度 ${metres} m；${options.scaleModel?'模型与原始留档同步缩放':'仅校准底图，模型尺寸依据未改变'}`;}
+ validateProject(next);Object.assign(project,next);return ratio;
+}
 // Resize in the furniture's own axes. The opposite corner/edge stays fixed,
 // including after rotation; corners preserve aspect ratio, edges change one axis.
 export function resizeFurniture(item,handle,delta){
@@ -68,7 +79,7 @@ export function snapFurnitureMove(item,position,f,{enabled=true,threshold=.18,gr
   if(Math.abs(shift)>threshold)return;const old=best[axis];
   if(!old||Math.abs(shift)<Math.abs(old.shift)-.001||Math.abs(Math.abs(shift)-Math.abs(old.shift))<=.001&&priority>old.priority)best[axis]={axis,shift,value,from,to,label,priority};
  };
- for(const w of f.walls.filter(w=>!w.hidden)){
+ for(const w of f.walls.filter(w=>!w.hidden&&phaseVisible(w))){
   if(Math.abs(w.a.x-w.b.x)<.001&&b.y1>=Math.min(w.a.y,w.b.y)-threshold&&b.y0<=Math.max(w.a.y,w.b.y)+threshold){
    const face=w.a.x+(position.x<w.a.x?-1:1)*w.thickness/2,edge=position.x<w.a.x?b.x1:b.x0;
    offer('x',face-edge,face,Math.min(b.y0,w.a.y,w.b.y),Math.max(b.y1,w.a.y,w.b.y),'贴墙',2);
@@ -78,7 +89,7 @@ export function snapFurnitureMove(item,position,f,{enabled=true,threshold=.18,gr
    offer('y',face-edge,face,Math.min(b.x0,w.a.x,w.b.x),Math.max(b.x1,w.a.x,w.b.x),'贴墙',2);
   }
  }
- for(const other of f.furniture.filter(o=>!o.hidden)){
+ for(const other of f.furniture.filter(o=>!o.hidden&&phaseVisible(o))){
   if(other.id===item.id)continue;const q=furnitureBounds(other);
   const gapX=Math.max(0,q.x0-b.x1,b.x0-q.x1),gapY=Math.max(0,q.y0-b.y1,b.y0-q.y1);
   if(gapX>3||gapY>3)continue;
@@ -92,10 +103,10 @@ export function snapFurnitureMove(item,position,f,{enabled=true,threshold=.18,gr
 }
 export function snapPlanPoint(p,f,threshold,{ignoreWallId}={}){
  let endpoint=null,d=threshold;
- for(const w of f.walls){if(w.hidden||w.id===ignoreWallId)continue;for(const ep of [w.a,w.b]){const n=dist(ep,p);if(n<d){d=n;endpoint=ep;}}}
+ for(const w of f.walls){if(w.hidden||!phaseVisible(w)||w.id===ignoreWallId)continue;for(const ep of [w.a,w.b]){const n=dist(ep,p);if(n<d){d=n;endpoint=ep;}}}
  if(endpoint)return{point:{...endpoint},label:'墙角吸附',guides:[]};
  let hit=null;d=threshold;
- for(const w of f.walls){if(w.hidden||w.id===ignoreWallId)continue;const q=projection(p,w);if(q.distance<d){d=q.distance;hit=q.point;}}
+ for(const w of f.walls){if(w.hidden||!phaseVisible(w)||w.id===ignoreWallId)continue;const q=projection(p,w);if(q.distance<d){d=q.distance;hit=q.point;}}
  if(hit)return{point:{...hit},label:'墙线吸附',guides:[]};
  return{point:{x:Math.round(p.x*10)/10,y:Math.round(p.y*10)/10},label:'网格 0.1 m',guides:[]};
 }
@@ -121,17 +132,17 @@ export function villaProject(){
  f.furniture=[{id:uid(),type:'sofa',name:'三人沙发',x:2.5,y:1.3,w:2.4,d:.9,rot:0,color:'#aab8a7'},{id:uid(),type:'table',name:'餐桌',x:2.5,y:6.5,w:1.6,d:.8,rot:0,color:'#dac3a5'},{id:uid(),type:'bed',name:'双人床',x:9.8,y:6.5,w:1.8,d:2,rot:0,color:'#c9d6df'}];
  const f2=duplicateFloor(f,'二层');f2.stairs=[];f2.furniture=[];f2.rooms.forEach((r,i)=>r.name=['主卧','次卧','起居室','卫浴','楼梯间'][i]||'房间');p.floors.push(f2);return p;
 }
-export function duplicateFloor(f,name){const next=clone(f),ids=new Map(),groups=new Map();next.id=uid();next.name=name;next.nameEdited=false;next.solids??=[];for(const list of ['walls','openings','rooms','furniture','stairs','solids'])next[list].forEach(o=>{const old=o.id;o.id=uid();ids.set(old,o.id);if(o.groupId){if(!groups.has(o.groupId))groups.set(o.groupId,uid());o.groupId=groups.get(o.groupId);}});next.openings.forEach(o=>o.wallId=ids.get(o.wallId));next.guides?.forEach(g=>g.id=uid());return next;}
+export function duplicateFloor(f,name){const next=clone(f),ids=new Map(),groups=new Map();for(const key of ['walls','openings','rooms','furniture','stairs','solids'])next[key]=(next[key]||[]).filter(o=>phaseVisible(o));if(next.delivery){next.delivery.points=next.delivery.points.filter(o=>phaseVisible(o));next.delivery.dimensions=next.delivery.dimensions.filter(d=>!d.phase||d.phase==='proposed');next.delivery.notes=next.delivery.notes.filter(d=>!d.phase||d.phase==='proposed');}next.id=uid();next.name=name;next.nameEdited=false;next.solids??=[];for(const list of ['walls','openings','rooms','furniture','stairs','solids'])next[list].forEach(o=>{const old=o.id;o.id=uid();ids.set(old,o.id);if(o.groupId){if(!groups.has(o.groupId))groups.set(o.groupId,uid());o.groupId=groups.get(o.groupId);}});next.openings.forEach(o=>o.wallId=ids.get(o.wallId));next.guides?.forEach(g=>g.id=uid());remapFloorDelivery(next,ids);return next;}
 export function floorElevation(project,index){return project.floors.slice(0,index).reduce((s,f)=>s+f.height,0);}
 export function normalizeOpenings(f){for(const o of f.openings){const w=f.walls.find(w=>w.id===o.wallId);if(!w)continue;const l=length(w);o.width=clamp(o.width,.2,l);o.offset=clamp(o.offset,o.width/2,l-o.width/2);const h=w.height||f.height;o.sill=o.type==='door'?0:clamp(o.sill,0,h-.25);o.height=clamp(o.height,.2,h-o.sill);}f.openings=f.openings.filter(o=>f.walls.some(w=>w.id===o.wallId));}
-export function canPlaceOpening(f,o){const w=f.walls.find(w=>w.id===o.wallId);if(!w)return false;const l=length(w);if(o.width>l||o.offset-o.width/2<-.001||o.offset+o.width/2>l+.001)return false;return !f.openings.some(q=>q.id!==o.id&&q.wallId===o.wallId&&Math.abs(q.offset-o.offset)<(q.width+o.width)/2+.04);}
+export function canPlaceOpening(f,o){const w=f.walls.find(w=>w.id===o.wallId);if(!w)return false;const l=length(w);if(o.width>l||o.offset-o.width/2<-.001||o.offset+o.width/2>l+.001)return false;return !f.openings.some(q=>q.id!==o.id&&q.wallId===o.wallId&&!(constructionStatus(q)==='demolish'&&constructionStatus(o)!=='demolish'||constructionStatus(q)==='new'&&constructionStatus(o)==='demolish')&&Math.abs(q.offset-o.offset)<(q.width+o.width)/2+.04);}
 export function changeWall(f,base,id,a,b){
  const before=base.walls.find(w=>w.id===id),target=f.walls.find(w=>w.id===id);if(!before||!target)return;
  for(const old of base.walls){const w=f.walls.find(w=>w.id===old.id);if(w){w.a={...old.a};w.b={...old.b};}}
  target.a={...a};target.b={...b};
  const pending=[id],processed=new Set();
  while(pending.length){const sourceId=pending.shift();if(processed.has(sourceId))continue;processed.add(sourceId);const oldSource=base.walls.find(w=>w.id===sourceId),newSource=f.walls.find(w=>w.id===sourceId);if(!oldSource||!newSource)continue;
-  for(const old of base.walls){if(old.id===id||old.id===sourceId)continue;const w=f.walls.find(w=>w.id===old.id);if(!w)continue;let moved=false;for(const end of['a','b']){const q=projection(old[end],oldSource);if(q.distance<.035){const next=onWall(newSource,q.offset/length(oldSource)*length(newSource));if(dist(next,w[end])>.0001){w[end]=next;moved=true;}}}if(moved)pending.push(w.id);}
+  for(const old of base.walls){if(!phaseVisible(old)||old.id===id||old.id===sourceId)continue;const w=f.walls.find(w=>w.id===old.id);if(!w)continue;let moved=false;for(const end of['a','b']){const q=projection(old[end],oldSource);if(q.distance<.035){const next=onWall(newSource,q.offset/length(oldSource)*length(newSource));if(dist(next,w[end])>.0001){w[end]=next;moved=true;}}}if(moved)pending.push(w.id);}
  }
  if(f.roomMode==='manual'){
   for(const r of f.rooms){const original=base.rooms.find(q=>q.id===r.id);if(!original)continue;r.poly=original.poly.map(([x,y])=>{const p={x,y};let chosen=null,d=Infinity;for(const ow of base.walls){const nw=f.walls.find(q=>q.id===ow.id);if(!nw||dist(nw.a,ow.a)+dist(nw.b,ow.b)<.0001)continue;const q=projection(p,ow);if(q.distance<ow.thickness/2+.045&&q.distance<d){chosen={ow,nw,q};d=q.distance;}}if(!chosen)return[x,y];const {ow,nw,q}=chosen,np=onWall(nw,q.offset/length(ow)*length(nw)),angle=Math.atan2(nw.b.y-nw.a.y,nw.b.x-nw.a.x)-Math.atan2(ow.b.y-ow.a.y,ow.b.x-ow.a.x),dx=x-q.point.x,dy=y-q.point.y;return[np.x+dx*Math.cos(angle)-dy*Math.sin(angle),np.y+dx*Math.sin(angle)+dy*Math.cos(angle)];});}
@@ -139,16 +150,16 @@ export function changeWall(f,base,id,a,b){
  normalizeOpenings(f);
 }
 export function refreshRooms(f){
- const preserved=f.roomMode==='manual'?f.rooms:f.rooms.filter(r=>r.manual);
+ const activeRooms=f.rooms.filter(o=>phaseVisible(o)),preserved=f.roomMode==='manual'?activeRooms:activeRooms.filter(r=>r.manual);
  return [...preserved,...detectRooms(f).filter(r=>!preserved.some(old=>polygonsOverlap(r.poly,cleanRoomPolygon(old.poly))))];
 }
-export function missingRooms(f){return detectRooms(f).filter(r=>!f.rooms.some(old=>polygonsOverlap(r.poly,cleanRoomPolygon(old.poly))));}
+export function missingRooms(f){return detectRooms(f).filter(r=>!f.rooms.filter(o=>phaseVisible(o)).some(old=>polygonsOverlap(r.poly,cleanRoomPolygon(old.poly))));}
 export function manualRoom(f,points){
- const poly=points.map(p=>Array.isArray(p)?[...p]:[p.x,p.y]);checkRoomPolygon(poly,f.rooms);
+ const poly=points.map(p=>Array.isArray(p)?[...p]:[p.x,p.y]);checkRoomPolygon(poly,f.rooms.filter(o=>phaseVisible(o)));
  let n=1;while(f.rooms.some(r=>r.name===`手动分区 ${n}`))n++;
  return{id:uid(),name:`手动分区 ${n}`,mat:'tile800',poly:cleanRoomPolygon(poly),manual:true};
 }
-export function checkRoomEdit(f,room){checkRoomPolygon(room.poly,f.rooms,room.id);}
+export function checkRoomEdit(f,room){checkRoomPolygon(room.poly,f.rooms.filter(o=>phaseVisible(o)),room.id);}
 export function splitWall(f,id,p){
  const w=f.walls.find(w=>w.id===id);if(!w||w.structuralKind==='column')throw new Error('请点击需要断开的墙段');
  const q=projection(p,w),l=length(w);if(q.offset<.15||l-q.offset<.15)throw new Error('断开点离墙端太近，请点在墙段中间');
@@ -194,7 +205,7 @@ export function wallCells(w,openings,defaultHeight){
 }
 // Planar half-edge traversal: split intersections first, then enumerate bounded faces.
 export function detectRooms(f){
- const walls=roomBoundaryWalls(f.walls),splits=walls.map(w=>[0,1]);
+ const walls=roomBoundaryWalls(f.walls.filter(w=>phaseVisible(w))),splits=walls.map(w=>[0,1]);
  const cross=(a,b)=>a.x*b.y-a.y*b.x;
  for(let i=0;i<walls.length;i++)for(let j=i+1;j<walls.length;j++){const a=walls[i],b=walls[j],u={x:a.b.x-a.a.x,y:a.b.y-a.a.y},v={x:b.b.x-b.a.x,y:b.b.y-b.a.y},d={x:b.a.x-a.a.x,y:b.a.y-a.a.y},den=cross(u,v);if(Math.abs(den)>1e-8){const t=cross(d,v)/den,s=cross(d,u)/den;if(t>=-.005&&t<=1.005&&s>=-.005&&s<=1.005){splits[i].push(clamp(t,0,1));splits[j].push(clamp(s,0,1));}}else{for(const p of[b.a,b.b]){const q=projection(p,a);if(q.distance<.015)splits[i].push(q.offset/length(a));}for(const p of[a.a,a.b]){const q=projection(p,b);if(q.distance<.015)splits[j].push(q.offset/length(b));}}}
  const nodes=[],edges=[];const node=p=>{let i=nodes.findIndex(n=>dist(n,p)<.035);if(i<0){i=nodes.length;nodes.push({...p,out:[]});}return i;};
@@ -203,7 +214,7 @@ export function detectRooms(f){
  const shapes=[],seen=new Set();for(let start=0;start<edges.length;start++){if(seen.has(start))continue;const trace=[];let e=start,closed=false;for(let step=0;step<=edges.length;step++){if(seen.has(e)){closed=e===start;break;}seen.add(e);const q=edges[e];trace.push([nodes[q.a].x,nodes[q.a].y]);const list=nodes[q.b].out,i=list.indexOf(q.twin);e=list[(i-1+list.length)%list.length];}if(closed&&signedArea(trace)>.45)shapes.push(cleanRoomPolygon(trace));}
  const rooms=[],used=new Set(),names=new Set(f.rooms.map(r=>r.name));
  for(const poly of shapes){
-  const c=roomLabelPoint(poly),old=f.rooms.filter(r=>!r.manual&&!used.has(r.id)).find(r=>{
+  const c=roomLabelPoint(poly),old=f.rooms.filter(r=>phaseVisible(r)&&!r.manual&&!used.has(r.id)).find(r=>{
    const q=roomLabelPoint(r.poly);return polygonContains([c.x,c.y],r.poly,true)&&polygonContains([q.x,q.y],poly,true);
   });
   if(old)used.add(old.id);let n=1;while(names.has(`房间 ${n}`))n++;const name=old?.name||`房间 ${n}`;names.add(name);
@@ -232,6 +243,8 @@ export function validateProject(input){
   if(f.guides!=null&&(!Array.isArray(f.guides)||f.guides.length>500))throw new Error('参考线数据无效');
   for(const g of f.guides||[]){if(typeof g.id!=='string'||!/^[a-zA-Z0-9_-]{1,90}$/.test(g.id)||local.has(g.id)||!['x','y'].includes(g.axis)||!finite(g.value,-500,500))throw new Error('参考线数据无效');local.add(g.id);g.locked=!!g.locked;g.hidden=!!g.hidden;}
   normalizeOpenings(f);
- }normalizeEmptyFloorName(p);return p;
+ }normalizeEmptyFloorName(p);validateDelivery(p);
+ if(p.delivery?.baseline){const baseline=clone(p.delivery.baseline),delivery={...p.delivery};delete delivery.baseline;validateProject({version:2,units:'m',name:'原始户型',roof:'none',floors:baseline.floors,delivery});}
+ return p;
 }
 export function migrateLegacy(s){if(!Array.isArray(s.furniture))throw new Error('不支持的文件格式');const p=referenceProject(),f=p.floors[0];p.name='原项目 · 导入方案';f.furniture=s.furniture.map(o=>({id:uid(),type:o.type,name:o.name,x:o.cx/1000,y:o.cy/1000,w:o.w/1000,d:o.d/1000,rot:o.rot||0,color:o.color}));f.walls=f.walls.filter(w=>!(s.demolished||[]).includes(w.id.replace('original-wall-','w')));f.rooms.forEach(r=>Object.assign(r,{name:s.rooms?.[r.id]?.name||r.name,mat:s.rooms?.[r.id]?.mat||r.mat}));return validateProject(p);}

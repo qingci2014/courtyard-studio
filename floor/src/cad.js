@@ -1,4 +1,5 @@
 import DxfParser from 'dxf-parser';
+import {decodeBinaryDxf} from './dxf-binary.js';
 import {uid,wall,length,clone,refreshRooms,validateProject} from './model.js';
 
 export const CAD_UNITS={mm:{name:'毫米',scale:.001,code:4},cm:{name:'厘米',scale:.01,code:5},m:{name:'米',scale:1,code:6},in:{name:'英寸',scale:.0254,code:1},ft:{name:'英尺',scale:.3048,code:2}};
@@ -15,7 +16,7 @@ export function cadBounds(segments){
 }
 export function decodeDxf(buffer){
  const bytes=new Uint8Array(buffer),header=new TextDecoder('windows-1252').decode(bytes.subarray(0,65536));
- if(header.startsWith('AutoCAD Binary DXF'))throw new Error('这是二进制 DXF，请在 CAD 中另存为 ASCII DXF 后导入。');
+ if(header.startsWith('AutoCAD Binary DXF'))return decodeBinaryDxf(buffer);
  const codepage=header.match(/\$DWGCODEPAGE\s*\r?\n\s*3\s*\r?\n\s*ANSI_(\d+)/)?.[1],version=header.match(/\$ACADVER\s*\r?\n\s*1\s*\r?\n\s*AC(\d+)/)?.[1];
  const enc=Number(version)>=1021?'utf-8':({936:'gbk',950:'big5',932:'shift_jis',949:'euc-kr',1252:'windows-1252'}[codepage]||'utf-8');
  return new TextDecoder(enc).decode(bytes);
@@ -165,6 +166,6 @@ export function applyCAD(floor,result,{selectedIds,name='CAD 图纸',replace=fal
  f.walls.push(...walls.map(w=>({...clone(w),cadImportId:importId})));f.openings.push(...result.openings.filter(o=>chosen.has(o.wallId)).map(clone));
  f.cad={name:String(name).slice(0,120),unit:result.unit,importId,segments:result.reference.map(({a,b,curve})=>({a,b,curve})),hidden:false};
  if(f.walls.length>1500)throw new Error('当前楼层墙体过多，请拆分楼层后导入。');
- f.rooms=refreshRooms(f);validateProject({version:2,units:'m',floors:[f]});Object.assign(floor,f);
+ f.rooms=refreshRooms(f);validateProject({version:2,units:'m',floors:[{...f,delivery:undefined}]});Object.assign(floor,f);
  return walls.length;
 }

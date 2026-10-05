@@ -1,8 +1,11 @@
 import fs from 'node:fs/promises';
 await import('./build-walkthrough.mjs');
+await import('./prepare-source-notice.mjs');
 await fs.mkdir('public/pdfjs',{recursive:true});
 for(const part of['cmaps','standard_fonts','wasm','iccs'])await fs.cp(`node_modules/pdfjs-dist/${part}`,`public/pdfjs/${part}`,{recursive:true});
 const parts=[];
+parts.push('LibreDWG / @mlightcad/libredwg-web 0.7.14 · GPL-3.0\nCorresponding source: https://github.com/mlightcad/libredwg-web/tree/1dd682f46339f37b67c5ff1085d10d04a8c16d7e\nBuild instructions and application source: source.html\n\n'+await fs.readFile('LICENSE.libredwg','utf8'));
+for(const [name,file] of [['pdf-lib','node_modules/pdf-lib/LICENSE.md'],['fontkit','node_modules/@pdf-lib/fontkit/README.md'],['Noto Sans SC','public/fonts/LICENSE.NotoSansCJK']])parts.push(name+'\n\n'+await fs.readFile(file,'utf8'));
 for(const [name,file] of [['dxf-parser 1.1.2','node_modules/dxf-parser/LICENSE'],['loglevel','node_modules/loglevel/LICENSE-MIT']])parts.push(name+'\n\n'+await fs.readFile(file,'utf8'));
 for(const [name,file] of [['floorplan-3d','LICENSE.floorplan-3d'],['Three.js','node_modules/three/LICENSE'],['PDF.js','node_modules/pdfjs-dist/LICENSE'],['Clipper 6.4.2','LICENSE.clipper']])parts.push(name+'\n\n'+await fs.readFile(file,'utf8'));
 await fs.writeFile('public/third-party-licenses.txt',parts.join('\n\n--------------------\n\n'));
