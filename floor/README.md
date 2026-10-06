@@ -66,4 +66,6 @@ npm run build
 
 `npm run test:browser` 使用 Playwright Chromium；测试截图和报告位于 `.qa/`。`dist/` 为静态发布目录，单独构建默认使用相对路径。在 courtyard-studio 仓库中，根目录的 `npm run build:floor` 使用 `/floor/` 作为资源前缀并复制到网站的 `dist/floor`，兼容带或不带末尾斜杠的入口。
 
+已有 CAD 参考线时，顶部“快速建模”直接打开保存的 CAD 墙线，无需重新选文件；重新生成默认替换上次 CAD 墙体及门窗，可撤销。图片/PDF 与 CAD 并存时，可选择建模来源。保存的参考线只包含上次选中的图层和范围；需要其他图层或楼层时，请重新导入原 CAD 文件。
+
 来源：`qingci2014/courtyard-studio` 原 `public/floor/index.html`，参考提交 `54d45f8e6057e6f726dc08ea359742afca43ea59`，上游 `wy51ai/floorplan-3d`。保留 MIT 许可于 `LICENSE.floorplan-3d`。新版源码位于仓库的 `floor/`，替换原 `/floor` 页面；通用建筑数据、编辑器和识别逻辑位于本项目 `src/`。
