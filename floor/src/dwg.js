@@ -21,7 +21,7 @@ export async function readDwg(buffer,wasmBase,{onProgress=()=>{},decoder}={}){
  let converted;try{converted=reader.dwg_write_dxf(buffer);}
  catch{throw new Error('无法读取此 DWG，请检查文件是否损坏，或在 CAD 中重新保存后重试。');}
  if(!converted?.length)throw new Error('无法读取此 DWG，请在 CAD 中重新保存后重试；复杂代理构件可能需要先炸开。');
- if(converted.length>30*1024*1024)throw new Error('DWG 展开后的数据超过 30 MB，请在 CAD 中只保留所需楼层后重试。');
- const raw=parseCAD(decodeDxf(converted));
+ if(converted.length>128*1024*1024)throw new Error('DWG 展开后的数据超过 128 MB，已达到内存保护上限，请只保留需要的图纸。');
+ const raw=parseCAD(decodeDxf(converted),{maxTextBytes:128*1024*1024});
  return {...raw,format:'DWG',version};
 }

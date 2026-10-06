@@ -6,6 +6,7 @@ import {LibreDwg} from '@mlightcad/libredwg-web';
 import DxfParser from 'dxf-parser';
 import {dwgVersion,readDwg} from '../src/dwg.js';
 import {decodeDxf,parseCAD,prepareCAD,applyCAD} from '../src/cad.js';
+import {previewCAD} from '../src/cad-processing.js';
 import {makeFloor,length,clone} from '../src/model.js';
 
 const fixture=n=>fs.readFile(new URL('./fixtures/dwg/'+n,import.meta.url));
@@ -32,12 +33,13 @@ test('DWG rejects renamed files, empty/truncated data, unsupported signatures an
  assert.throws(()=>dwgVersion(new Uint8Array(30*1024*1024+1)),/30 MB/);
  await assert.rejects(readDwg(new Uint8Array(),base),/为空/);
 });
-test('DWG conversion failures are readable and a complex drawing hits the geometry limit without altering a floor',async()=>{
+test('DWG conversion failures are readable and a complex drawing opens a bounded preview without altering a floor',async()=>{
  const valid=await fixture('line-2000.dwg');
  await assert.rejects(readDwg(valid,base,{decoder:{dwg_write_dxf:()=>null}}),/无法读取此 DWG/);
  await assert.rejects(readDwg(valid,base,{decoder:{dwg_write_dxf:()=>{throw Error('native');}}}),/无法读取此 DWG/);
  const floor=makeFloor(),before=clone(floor);
- await assert.rejects(readDwg(await fixture('blocks-2018.dwg'),base,{decoder:reader}),/线段过多/);
+ const raw=await readDwg(await fixture('blocks-2018.dwg'),base,{decoder:reader});
+ assert.ok(raw.segments.length>24000);const preview=previewCAD(raw,{layers:raw.layers.map(l=>l.name)});assert.ok(preview.segments.length<=6000);assert.equal(preview.total,raw.segments.length);assert.deepEqual(preview.bounds,raw.bounds);
  assert.deepEqual(floor,before);
 });
 test('real binary DXF 2000 and 2018 decode with their headers, units and layers',async()=>{

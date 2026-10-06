@@ -3,7 +3,7 @@ import {decodeBinaryDxf} from './dxf-binary.js';
 import {uid,wall,length,clone,refreshRooms,validateProject} from './model.js';
 
 export const CAD_UNITS={mm:{name:'毫米',scale:.001,code:4},cm:{name:'厘米',scale:.01,code:5},m:{name:'米',scale:1,code:6},in:{name:'英寸',scale:.0254,code:1},ft:{name:'英尺',scale:.3048,code:2}};
-const MAX_SEGMENTS=24000,EPS=1e-7;
+const MAX_SEGMENTS=1000000,EPS=1e-7;
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const dot=(p,u)=>p.x*u.x+p.y*u.y;
 const cross=(a,b)=>a.x*b.y-a.y*b.x;
@@ -21,8 +21,8 @@ export function decodeDxf(buffer){
  const enc=Number(version)>=1021?'utf-8':({936:'gbk',950:'big5',932:'shift_jis',949:'euc-kr',1252:'windows-1252'}[codepage]||'utf-8');
  return new TextDecoder(enc).decode(bytes);
 }
-export function parseCAD(text){
- if(typeof text!=='string'||text.length>30*1024*1024)throw new Error('DXF 请控制在 30 MB 以内。');
+export function parseCAD(text,{maxTextBytes=30*1024*1024}={}){
+ if(typeof text!=='string'||text.length>maxTextBytes)throw new Error('展开后的 CAD 数据过大，请只保留需要的图纸。');
  if(text.startsWith('AutoCAD Binary DXF'))throw new Error('请另存为 ASCII DXF 后导入。');
  if(!/\bSECTION\b/.test(text)||!/(?:^|\n)\s*0\s*\r?\n\s*EOF\s*$/.test(text))throw new Error('DXF 不完整或格式无效，请从 CAD 重新另存为 DXF。');
  let doc;try{doc=new DxfParser().parseSync(text.replace(/^\uFEFF/,''));}catch{throw new Error('无法读取此 DXF，请从 CAD 另存为 ASCII DXF（建议 2010 或更新版本）。');}
@@ -31,20 +31,21 @@ export function parseCAD(text){
   if(!a||!b||![a.x,a.y,b.x,b.y].every(Number.isFinite))throw new Error('图纸中存在无效坐标。');
   const sourceLength=distance(a,b);a=point(m,a);b=point(m,b);a.y=-a.y;b.y=-b.y;
   if(distance(a,b)<EPS)return;
-  if(segments.length>=MAX_SEGMENTS)throw new Error('图纸线段过多，请在 CAD 中只保留所需楼层，或拆分文件后导入。');
+  if(segments.length>=MAX_SEGMENTS)throw new Error('图纸展开超过 100 万条线，已达到读取器的内存保护上限。请只保留所需图纸后导入。');
   const l=Object.hasOwn(layerInfo,layer)?layerInfo[layer]:{};
-  if(!layers.has(layer))layers.set(layer,{name:layer,count:0,visible:l.visible!==false&&!l.frozen,recommended:/wall|墙|结构|partition/i.test(layer)&&!/dim|标注|轴|axis|grid/i.test(layer)});
+  if(!layers.has(layer))layers.set(layer,{name:layer,count:0,straightCount:0,visible:l.visible!==false&&!l.frozen,recommended:/wall|墙|结构|partition/i.test(layer)&&!/dim|标注|轴|axis|grid/i.test(layer)});
   const scale=Math.abs(m[0]*m[3]-m[1]*m[2])*sourceLength/distance(a,b);
-  segments.push({a,b,layer,curve,width:width*scale});layers.get(layer).count++;
+  segments.push({a,b,layer,curve,width:width*scale});layers.get(layer).count++;if(!curve)layers.get(layer).straightCount++;
  };
  const arc=(center,radius,start,sweep,entity,m,layer)=>{
   if(!Number.isFinite(radius)||radius<=0)return;
+  if(!Number.isFinite(start)||!Number.isFinite(sweep)||Math.abs(sweep)>Math.PI*2+EPS)throw new Error('图纸中存在无效的圆弧角度。');
   const n=Math.max(2,Math.ceil(Math.abs(sweep)/(Math.PI/36)));
   for(let i=0;i<n;i++){const p=t=>({x:center.x+radius*Math.cos(t),y:center.y+radius*Math.sin(t)});emit(p(start+sweep*i/n),p(start+sweep*(i+1)/n),entity,m,layer,true);}
  };
  const visit=(entities,m=[1,0,0,1,0,0],inherited='0',chain=[])=>{
   for(const e of entities||[]){
-   if(++visited>100000)throw new Error('图纸构件过多，请拆分楼层后导入。');
+   if(++visited>500000)throw new Error('图纸展开超过 50 万个构件，已达到读取器的内存保护上限。');
    if(e.inPaperSpace||e.visible===false)continue;
    const layer=e.layer&&e.layer!=='0'?e.layer:inherited;
    const normal=e.extrusionDirection||{x:e.extrusionDirectionX||0,y:e.extrusionDirectionY||0,z:e.extrusionDirectionZ??1};
@@ -127,10 +128,15 @@ export function prepareCAD(raw,{layers,unit,mode='double',thickness=.2,crop=null
  if(!b)throw new Error('所选图层和范围内没有线条。');
  if(b.w*scale>450||b.h*scale>450)throw new Error('范围超过 450 米，请检查单位或框选单层户型。');
  const shift=p=>({x:x+(p.x-b.x)*scale,y:y+(p.y-b.y)*scale});
- const reference=source.map(s=>({...s,a:shift(s.a),b:shift(s.b),width:s.width*scale}));
- if(reference.length>12000)throw new Error('当前范围线条过多，请缩小导入范围或减少图层。');
- const unique=new Map();for(const s of reference.filter(s=>!s.curve&&distance(s.a,s.b)>.03)){const a=[s.a.x,s.a.y].map(v=>v.toFixed(4)).join(','),b=[s.b.x,s.b.y].map(v=>v.toFixed(4)).join(',');unique.set([a,b].sort().join('|'),s);}
- const lines=[...unique.values()];if(lines.length>2500)throw new Error('墙线过多，请只选择墙体图层或缩小范围。');
+ const transform=s=>({...s,a:shift(s.a),b:shift(s.b),width:s.width*scale});
+ const unique=new Map();let curves=0;
+ for(const sourceLine of source){if(sourceLine.curve){curves++;continue;}if(distance(sourceLine.a,sourceLine.b)*scale<=.03)continue;const s=transform(sourceLine),a=[s.a.x,s.a.y].map(v=>v.toFixed(4)).join(','),b=[s.b.x,s.b.y].map(v=>v.toFixed(4)).join(',');unique.set([a,b].sort().join('|'),s);if(unique.size>2500)throw new Error('所选范围超过 2500 条有效墙线。图纸已读取，请取消家具、标注等图层，或框选当前楼层后再分析。');}
+ const lines=[...unique.values()];
+ // Full wall geometry is used above. Only decorative reference curves are
+ // simplified to keep the saved project and SVG lightweight.
+ let reference;
+ if(source.length<=12000)reference=source.map(transform);
+ else{const extra=source.filter(s=>s.curve||distance(s.a,s.b)*scale<=.03),budget=12000-lines.length,step=Math.max(1,Math.ceil(extra.length/budget));reference=[...lines,...extra.filter((_,i)=>i%step===0).slice(0,budget).map(transform)];}
  let walls=[],review=[];
  const make=(a,b,t)=>({...wall(a,b,Math.max(.03,Math.min(1.2,t))),cad:true});
  if(mode==='center')walls=lines.map(s=>make(s.a,s.b,s.width||thickness));
@@ -155,7 +161,7 @@ export function prepareCAD(raw,{layers,unit,mode='double',thickness=.2,crop=null
  stitchWalls(walls);const merged=mergeWalls(walls,inferDoors);walls=merged.walls.filter(w=>length(w)>.03);
  const openings=[];
  for(const gap of merged.gaps){const g=frame(gap),mid=at(g,(g.a+g.b)/2);for(const w of walls){const q=frame(w),offset=dot(mid,q.u)-q.a,width=distance(gap.a,gap.b);if(Math.abs(cross(q.u,g.u))>.002||Math.abs(dot(mid,q.n)-q.c)>.03||offset-width/2<.01||offset+width/2>length(w)-.01)continue;if(openings.some(o=>o.wallId===w.id&&Math.abs(o.offset-offset)<(o.width+width)/2))continue;openings.push({id:uid(),wallId:w.id,type:'door',offset,width,height:2.1,sill:0,hinge:1,inferred:true});break;}}
- return {walls,review,openings,reference,bounds:{x,y,w:Math.max(.1,b.w*scale),h:Math.max(.1,b.h*scale)},unit,origin:{x:b.x,y:b.y},warnings:raw.warnings,curves:reference.filter(s=>s.curve).length};
+ return {walls,review,openings,reference,bounds:{x,y,w:Math.max(.1,b.w*scale),h:Math.max(.1,b.h*scale)},unit,origin:{x:b.x,y:b.y},warnings:raw.warnings,curves,sourceCount:source.length,referenceSimplified:source.length>reference.length};
 }
 export function applyCAD(floor,result,{selectedIds,name='CAD 图纸',replace=false}={}){
  const f=clone(floor),chosen=new Set(selectedIds??result.walls.map(w=>w.id)),walls=[...result.walls,...result.review].filter(w=>chosen.has(w.id));
