@@ -2,7 +2,11 @@ import {CAD_UNITS,applyCAD} from './cad.js';
 import {createCADSession} from './cad-session.js';
 let importSerial=0;
 
-async function readCAD(file,dialog){
+async function readCAD(file,dialog,reference){
+ if(reference){
+  const session=createCADSession(new Worker(new URL('./cad-worker.js',import.meta.url),{type:'module'})),cancel=()=>session.close();dialog.addEventListener('close',cancel,{once:true});
+  try{return {raw:await session.request('reference',reference),session};}catch(error){session.close();throw error;}finally{dialog.removeEventListener('close',cancel);}
+ }
  const isDwg=/\.dwg$/i.test(file.name),format=isDwg?'DWG':'DXF';
  if(!file.size)throw new Error(`${format} 文件为空。`);
  if(file.size>30*1024*1024)throw new Error(`${format} 请控制在 30 MB 以内。`);
@@ -14,12 +18,13 @@ async function readCAD(file,dialog){
  catch(error){session.close();throw error;}
  finally{dialog.removeEventListener('close',cancel);}
 }
-export async function openCADImport({file,$,floor,modal,esc,mutate,setMode,setTool,fitPlan,viewer,toast,ui}){
- const target=floor().id,before=JSON.stringify(floor()),format=/\.dwg$/i.test(file.name)?'DWG':'DXF',title=`导入 CAD · ${format}`;
+export async function openCADImport({file,reference,$,floor,modal,esc,mutate,setMode,setTool,fitPlan,viewer,toast,ui}){
+ file??={name:reference?.name||'CAD 图纸'};
+ const target=floor().id,before=JSON.stringify(floor()),format=/\.dwg$/i.test(file.name)?'DWG':'DXF',title=reference?'快速建模 · CAD':`导入 CAD · ${format}`;
  const d=modal(title,`<p class="muted">${esc(file.name)}</p><p role="status">正在读取图层和线条…</p>`,'<button class="btn" id="cancelCAD">取消</button>');
  const owner=String(++importSerial);d.dataset.cadOwner=owner;
  $('#cancelCAD').onclick=()=>d.close();
- let loaded;try{loaded=await readCAD(file,d);}catch(e){if(d.open&&d.dataset.cadOwner===owner){d.querySelector('[role="status"]').textContent=e.message;}return;}
+ let loaded;try{loaded=await readCAD(file,d,reference);}catch(e){if(d.open&&d.dataset.cadOwner===owner){d.querySelector('[role="status"]').textContent=e.message;}return;}
  if(!loaded)return;const {raw,session}=loaded;
  if(!d.open||d.dataset.cadOwner!==owner){session.close();return;}
  const visible=raw.layers.filter(l=>l.visible),available=visible.length?visible:raw.layers;
@@ -30,6 +35,7 @@ export async function openCADImport({file,$,floor,modal,esc,mutate,setMode,setTo
  d.addEventListener('close',()=>{closed=true;generation++;clearTimeout(previewTimer);session.close();},{once:true});
  modal(title,`<p class="muted cad-file">${esc(file.name)} · 导入到 ${esc(floor().name)}</p><div class="cad-import-layout"><div class="cad-preview-column"><div class="cad-preview-actions"><button class="btn small" id="cropCAD" aria-pressed="false" title="同一张 CAD 有多个楼层时，拖出矩形，只导入其中一个范围。">框选当前楼层</button><button class="btn small" id="resetCADRange" disabled>清除范围</button><span id="cadSize"></span></div><svg id="cadPreview" class="cad-preview" aria-label="CAD 图纸与候选墙体预览"></svg><div class="recognition-legend"><span class="accepted">绿色：将生成墙体</span><span class="review">黄色：待确认，点击加入</span></div><div class="cad-status" id="cadStatus" role="status" aria-live="polite">确认单位和墙体图层，然后点击“分析墙线”。</div>${raw.warnings.length?`<p class="muted">${raw.warnings.map(esc).join('<br>')}</p>`:''}<p class="muted" title="文字、标注和填充不会转换为墙。圆弧保留为 CAD 参考线；需要的门窗可在生成模型后补充。">${raw.ignored?'文字、标注等 '+raw.ignored+' 个构件未作为墙线读取。':'图纸在本机处理，线条按 CAD 坐标读取。'}</p></div><div class="cad-settings"><label class="field"><span>图纸单位</span><select id="cadUnit" aria-label="CAD 图纸单位"><option value="">请选择单位</option>${Object.entries(CAD_UNITS).map(([k,v])=>`<option value="${k}" ${raw.unit===k?'selected':''}>${v.name}（${k}）</option>`).join('')}</select></label><p class="muted cad-unit-note">${raw.unit?'已读取文件单位，可对照预览尺寸核对。':'文件未标明可用单位，请选择后再分析。'}</p><h3>墙体图层</h3>${!visible.length?'<p class="muted">原文件的图层均已关闭；已选推荐墙层供预览，请核对。</p>':''}<input id="cadLayerSearch" type="search" placeholder="搜索图层" aria-label="搜索 CAD 图层"><div class="cad-preview-actions"><button class="btn small" id="recommendCADLayers">推荐墙层</button><button class="btn small" id="clearCADLayers">清空选择</button></div><div class="cad-layer-list">${raw.layers.map((l,i)=>`<label title="${esc(l.name)}${l.visible?'':' · 原图层已关闭'}"><input type="checkbox" data-cad-layer="${i}" ${layers.has(l.name)?'checked':''}><span>${esc(l.name)}</span><small>${l.count}</small></label>`).join('')}</div><label class="field"><span>墙线画法</span><select id="cadMode" aria-label="墙线画法"><option value="double">双线墙 · 提取中线</option><option value="center">单线墙 · 按线生成</option></select></label><label class="field" title="单线墙的墙厚；双线墙优先匹配此厚度附近的线对，并使用实际间距。"><span>参考墙厚 / m</span><input id="cadThickness" aria-label="参考墙厚 / m" type="number" value="0.2" min="0.03" max="1.2" step="0.01"></label><label class="toggle-row" title="按共线墙段之间的间隙推测门洞；蓝色虚线为候选门洞，生成后可改成窗或删除。">推测门洞<input type="checkbox" id="cadDoors" checked></label><details class="cad-placement"><summary>放置位置与重复导入</summary><div class="field-row"><label class="field"><span>放置 X / m</span><input id="cadX" type="number" value="0" step=".1" aria-label="CAD 放置 X / m"></label><label class="field"><span>放置 Y / m</span><input id="cadY" type="number" value="0" step=".1" aria-label="CAD 放置 Y / m"></label></div><label class="field"><span>导入方式</span><select id="cadApplyMode" aria-label="CAD 导入方式"><option value="append">追加到当前楼层</option>${floor().cad?`<option value="replace" ${floor().cad.name===file.name?'selected':''}>替换上次 CAD 导入的墙</option>`:''}</select></label></details></div></div>`,'<button class="btn" id="cancelCAD">取消</button><button class="btn" id="analyzeCAD">分析墙线</button><button class="btn primary" id="applyCAD" disabled>生成可编辑模型</button>');
  d.classList.add('cad-dialog');const svg=$('#cadPreview'),status=$('#cadStatus'),apply=$('#applyCAD');
+ if(reference){$('#cadX').value=raw.bounds.x;$('#cadY').value=raw.bounds.y;$('#cadMode').value=raw.modeling.mode;$('#cadThickness').value=raw.modeling.thickness;$('#cadDoors').checked=raw.modeling.inferDoors;d.querySelector('.cad-unit-note').textContent='已保存的 CAD 参考线以米为单位，保留原位置和真实尺寸。';d.querySelector('.cad-file').insertAdjacentHTML('afterend','<p class="muted">使用本层已保存的 CAD 参考线。重新生成默认替换上次 CAD 墙体及门窗（包含后续修改），保留手画构件；可撤销。</p>');}
  const analyze=$('#analyzeCAD');let pad=1;
  const fitPreview=b=>{if(!b)return;pad=Math.max(b.w,b.h)*.025||1;svg.setAttribute('viewBox',`${b.x-pad} ${b.y-pad} ${Math.max(b.w,.1)+pad*2} ${Math.max(b.h,.1)+pad*2}`);};
  fitPreview(raw.bounds);

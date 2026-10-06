@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {restoreActiveFloor,nextFloorName,floorContentLabel} from '../src/floor-ui.js';
+import {restoreActiveFloor,nextFloorName,floorContentLabel,quickModelSource} from '../src/floor-ui.js';
 import {blankProject,makeFloor,clone,validateProject,normalizeEmptyFloorName} from '../src/model.js';
 
 test('refresh restores a valid saved floor without reusing another project or deleted floor',()=>{
@@ -11,6 +11,14 @@ test('refresh restores a valid saved floor without reusing another project or de
  assert.equal(restoreActiveFloor(project,null),project.floors[0].id);
  project.floors.reverse();
  assert.equal(restoreActiveFloor(project,{projectId:project.id,floorId:upper.id}),upper.id);
+});
+
+test('quick modeling opens existing CAD or image data before offering a file import',()=>{
+ const floor=makeFloor();assert.equal(quickModelSource(floor),'import');
+ floor.cad={segments:[{a:{x:0,y:0},b:{x:1,y:0}}],hidden:true};assert.equal(quickModelSource(floor),'cad');
+ floor.image={name:'plan.pdf'};assert.equal(quickModelSource(floor),'choose');
+ floor.cad=null;assert.equal(quickModelSource(floor),'image');
+ floor.image=null;floor.cad={segments:[]};assert.equal(quickModelSource(floor),'import');
 });
 
 test('adding or copying after a floor deletion avoids duplicate default names and preserves existing names',()=>{

@@ -40,7 +40,8 @@ export function calibrateFloor(f,a,b,metres,{scaleModel=false}={}){
   [...next.furniture,...next.stairs].forEach(o=>Object.assign(o,point(o),{w:o.w*ratio,d:o.d*ratio}));
   scaleFloorDelivery(next,a,ratio);
   next.guides?.forEach(g=>g.value=a[g.axis]+(g.value-a[g.axis])*ratio);
-  next.cad?.segments.forEach(s=>{s.a=point(s.a);s.b=point(s.b);});
+  next.cad?.segments.forEach(s=>{s.a=point(s.a);s.b=point(s.b);if(Number.isFinite(s.width))s.width*=ratio;});
+  if(next.cad?.modeling)next.cad.modeling.thickness*=ratio;
  }
  try{const check=clone(next);delete check.delivery;validateProject({version:2,units:'m',name:'尺寸校准',roof:'none',floors:[check]});}
  catch{throw new Error('缩放后的尺寸超出可用范围，请检查选中的两点、图纸数字和单位');}

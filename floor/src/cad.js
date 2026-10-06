@@ -161,7 +161,7 @@ export function prepareCAD(raw,{layers,unit,mode='double',thickness=.2,crop=null
  stitchWalls(walls);const merged=mergeWalls(walls,inferDoors);walls=merged.walls.filter(w=>length(w)>.03);
  const openings=[];
  for(const gap of merged.gaps){const g=frame(gap),mid=at(g,(g.a+g.b)/2);for(const w of walls){const q=frame(w),offset=dot(mid,q.u)-q.a,width=distance(gap.a,gap.b);if(Math.abs(cross(q.u,g.u))>.002||Math.abs(dot(mid,q.n)-q.c)>.03||offset-width/2<.01||offset+width/2>length(w)-.01)continue;if(openings.some(o=>o.wallId===w.id&&Math.abs(o.offset-offset)<(o.width+width)/2))continue;openings.push({id:uid(),wallId:w.id,type:'door',offset,width,height:2.1,sill:0,hinge:1,inferred:true});break;}}
- return {walls,review,openings,reference,bounds:{x,y,w:Math.max(.1,b.w*scale),h:Math.max(.1,b.h*scale)},unit,origin:{x:b.x,y:b.y},warnings:raw.warnings,curves,sourceCount:source.length,referenceSimplified:source.length>reference.length};
+ return {walls,review,openings,reference,bounds:{x,y,w:Math.max(.1,b.w*scale),h:Math.max(.1,b.h*scale)},unit,origin:{x:b.x,y:b.y},warnings:raw.warnings,curves,sourceCount:source.length,referenceSimplified:source.length>reference.length,modeling:{mode,thickness,inferDoors}};
 }
 export function applyCAD(floor,result,{selectedIds,name='CAD 图纸',replace=false}={}){
  const f=clone(floor),chosen=new Set(selectedIds??result.walls.map(w=>w.id)),walls=[...result.walls,...result.review].filter(w=>chosen.has(w.id));
@@ -170,7 +170,7 @@ export function applyCAD(floor,result,{selectedIds,name='CAD 图纸',replace=fal
  if(f.walls.some(w=>removed.has(w.id)&&w.locked)||f.openings.some(o=>removed.has(o.wallId)&&o.locked))throw new Error('上次 CAD 导入的墙或门窗已锁定，请先解锁再替换。');
  f.walls=f.walls.filter(w=>!removed.has(w.id));f.openings=f.openings.filter(o=>!removed.has(o.wallId));
  f.walls.push(...walls.map(w=>({...clone(w),cadImportId:importId})));f.openings.push(...result.openings.filter(o=>chosen.has(o.wallId)).map(clone));
- f.cad={name:String(name).slice(0,120),unit:result.unit,importId,segments:result.reference.map(({a,b,curve})=>({a,b,curve})),hidden:false};
+ f.cad={name:String(name).slice(0,120),unit:result.unit,importId,segments:result.reference.map(({a,b,curve,layer,width})=>({a,b,curve,layer,width})),modeling:clone(result.modeling),hidden:false};
  if(f.walls.length>1500)throw new Error('当前楼层墙体过多，请拆分楼层后导入。');
  f.rooms=refreshRooms(f);validateProject({version:2,units:'m',floors:[{...f,delivery:undefined}]});Object.assign(floor,f);
  return walls.length;

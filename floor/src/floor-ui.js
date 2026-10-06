@@ -2,6 +2,11 @@ export function restoreActiveFloor(project,state){
  return state?.projectId===project.id&&project.floors.some(f=>f.id===state.floorId)?state.floorId:project.floors[0].id;
 }
 
+export function quickModelSource(floor){
+ const cad=!!floor.cad?.segments?.length,image=!!floor.image;
+ return cad&&image?'choose':cad?'cad':image?'image':'import';
+}
+
 export function nextFloorName(floors){
  const names=new Set(floors.map(f=>f.name.replace(/\s/g,'')));
  let number=floors.length+1;

@@ -12,7 +12,7 @@ import {selectionTools,objectList,guidePanel} from './editing-panel.js';
 import {installModelingTools} from './modeling-tools.js';
 import {solidArea} from './modeling.js';
 import {createWalkthroughHTML} from './walkthrough-export.js';
-import {restoreActiveFloor,nextFloorName,floorContentLabel} from './floor-ui.js';
+import {restoreActiveFloor,nextFloorName,floorContentLabel,quickModelSource} from './floor-ui.js';
 import {installFurnitureToolbar} from './furniture-toolbar.js';
 import {furnitureMetrics} from './assets.js';
 import {saveProject,loadProject,saveEditorState,loadEditorState,download,readPlan} from './storage.js';
@@ -54,7 +54,18 @@ $('.floorbar .right').insertAdjacentHTML('afterbegin','<button id="objectListBut
 $('#importPlan').classList.add('small');
 $('#objectListButton').before($('#importPlan'));
 $('#objectListButton').insertAdjacentHTML('beforebegin','<button id="quickModel" class="btn small primary">快速建模</button>');
-$('#quickModel').onclick=()=>floor().image?recognizeDialog():importDialog();
+$('#quickModel').onclick=quickModelDialog;
+async function quickCADModel(){
+ try{const {openCADImport}=await import('./cad-dialog.js');await openCADImport({reference:M.clone(floor().cad),$,floor,modal,esc,mutate,setMode,setTool,fitPlan,viewer,toast,ui});}catch(e){toast(e.message||'CAD 建模失败');}
+}
+function quickModelDialog(){
+ const source=quickModelSource(floor());
+ if(source==='cad')return quickCADModel();
+ if(source==='image')return recognizeDialog();
+ if(source==='import')return importDialog();
+ modal('选择建模图纸','<p>当前楼层有 CAD 参考线和图片/PDF 底图，请选择需要建模的图纸。</p>','<button class="btn" id="quickImageModel">图片 / PDF</button><button class="btn primary" id="quickCADModel">CAD 参考线</button>');
+ $('#quickImageModel').onclick=recognizeDialog;$('#quickCADModel').onclick=quickCADModel;
+}
 $('#objectListButton').onclick=()=>{ui.panel='objects';setTool('select');$('#inspector').classList.add('open');};
 $('#boxSelect').onclick=()=>{setTool('box');ui.panel='properties';renderInspector();};
 $('#guideTool').onclick=()=>{ui.panel='properties';setTool('guide');$('#inspector').classList.add('open');};

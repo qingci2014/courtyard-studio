@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as M from '../src/model.js';
 import {parseCAD,prepareCAD,applyCAD,decodeDxf,clipCADSegment} from '../src/cad.js';
 import {dxf,line,poly,insert,block,doublePlan} from './fixtures/cad-plans.mjs';
+import {restoreCADReference,createCADProcessor} from '../src/cad-processing.js';
 const options={unit:'mm',layers:['A-WALL'],inferDoors:false};
 const near=(a,b,t=.00001)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`);
 test('millimetre DXF double walls become four 200 mm walls and one correctly sized room',()=>{
@@ -47,4 +48,24 @@ test('CAD import and replacement are atomic, preserve authored objects, obey loc
 test('malformed DXF, excessive dimensions and recursive blocks fail or report skipped data',()=>{
  assert.throws(()=>parseCAD('not dxf'));assert.throws(()=>parseCAD(dxf(line([0,0],[1,0])).replace(/EOF\s*$/,'')));assert.throws(()=>decodeDxf(new TextEncoder().encode('AutoCAD Binary DXF\r\n').buffer),/二进制/);
  const raw=parseCAD(dxf(insert('self')+line([0,0],[10000,0]),{blocks:block('self',insert('self'))}));assert.match(raw.warnings.join(''),/递归/);assert.throws(()=>prepareCAD(raw,{...options,unit:'m'}),/450/);
+});
+
+test('saved CAD can be modeled again without reading a file, changing metres, moving walls or duplicating them',async()=>{
+ const initial=prepareCAD(parseCAD(dxf(doublePlan())),{...options,x:12,y:-4}),floor=M.makeFloor();applyCAD(floor,initial,{name:'plan.dwg'});
+ const saved=M.validateProject(JSON.parse(JSON.stringify({...M.blankProject(),floors:[floor]}))).floors[0],before=M.clone(saved);
+ const processor=createCADProcessor(()=>{throw Error('must not read a file');}),metadata=await processor({type:'reference',options:saved.cad});
+ assert.equal(metadata.unit,'m');assert.equal(metadata.segments,undefined);
+ const raw=restoreCADReference(saved.cad),result=await processor({type:'analyze',options:{...raw.modeling,unit:'m',layers:raw.layers.map(l=>l.name),x:raw.bounds.x,y:raw.bounds.y}});
+ assert.equal(result.walls.length,4);assert.deepEqual(result.bounds,initial.bounds);assert.deepEqual(saved,before);
+ const geometry=walls=>walls.map(w=>[w.a,w.b,w.thickness]);assert.deepEqual(geometry(result.walls),geometry(initial.walls));
+ applyCAD(saved,result,{name:saved.cad.name,replace:true});assert.equal(saved.walls.length,4);
+});
+
+test('CAD reference reload supports old projects and preserves polyline widths, layers and single-line settings',()=>{
+ const floor=M.makeFloor(),result=prepareCAD(parseCAD(dxf(poly([[0,0],[6000,0]],{closed:false,width:200,layer:'A-WALL'}))),{...options,mode:'center',thickness:.15});applyCAD(floor,result);
+ const raw=restoreCADReference(floor.cad);assert.equal(raw.segments[0].width,.2);assert.equal(raw.segments[0].layer,'A-WALL');assert.equal(raw.modeling.mode,'center');assert.equal(raw.modeling.inferDoors,false);
+ const again=prepareCAD(raw,{...raw.modeling,unit:raw.unit,layers:['A-WALL'],x:raw.bounds.x,y:raw.bounds.y});assert.equal(again.walls[0].thickness,.2);
+ floor.image={data:'data:image/png;base64,AA==',x:0,y:0,width:6,pixelWidth:600,pixelHeight:400,opacity:.5};M.calibrateFloor(floor,{x:0,y:0},{x:6,y:0},12,{scaleModel:true});const scaled=restoreCADReference(floor.cad);assert.equal(scaled.segments[0].width,.4);assert.equal(scaled.modeling.thickness,.3);
+ const legacy={segments:[{a:{x:5,y:6},b:{x:9,y:6},curve:false}],unit:'mm'};assert.equal(restoreCADReference(legacy).unit,'m');assert.equal(restoreCADReference(legacy).layers[0].name,'CAD 墙线');
+ assert.throws(()=>restoreCADReference({segments:[]}),/参考线/);assert.throws(()=>restoreCADReference({segments:[{a:{x:Infinity,y:0},b:{x:1,y:0}}]}),/坐标/);
 });
